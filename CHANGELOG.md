@@ -2,6 +2,24 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 02 — 2026-06-29 — Core AI modules (student side)
+
+- 5-step onboarding wizard (Goals → Skills → Education → Experience → Review) with animated step transitions, tag input, persistence to `career_profiles`, and edit-on-return.
+- AI server functions (`src/lib/ai.functions.ts`) using AI SDK + Lovable AI Gateway (`google/gemini-3-flash-preview`), all auth-gated via `requireSupabaseAuth`:
+  - `scoreEmployability` — overall score + skills/experience/education/market-fit breakdown, strengths, weaknesses, next actions.
+  - `analyzeSkillGap` — required skills (critical/important/nice-to-have), per-skill learning plan with resources + ETA.
+  - `optimizeResume` — ATS score, keyword matches/misses, issues, rewritten summary, suggested bullets; persists each run to `resumes`.
+  - `recommendCareers` — up to 5 career paths with fit score, rationale and a 90-day plan, plus upskilling & networking moves.
+  - `generateCoverLetter` — tailored cover letter from candidate profile + JD; saved to `generated_documents`.
+  - `generateInterviewKit` — 6–8 likely questions with category/assessment/sample answer; saved to `interview_sessions`.
+  - `getQuotaStatus` — live read of monthly usage.
+- Free-tier quota enforced at the server: 2 AI runs / calendar month. Active paid `subscriptions` row bypasses the cap.
+- `QuotaBadge` on every AI page; live dashboard tile shows `used / limit`.
+- `AiError` component handles quota-exhausted (`upgrade` CTA → `/billing`) and gateway 429/402 messages.
+- Routes added: `/employability`, `/skill-gap`, `/resume`, `/recommendations` (tabs: paths / cover / interview), `/jobs` (placeholder), `/profile`, `/billing` (placeholder).
+- DB: added `resumes.raw_text / target_role / ats_score / analysis`, `career_profiles.recommendations` (jsonb, default `{}`).
+- Deps: `ai`, `@ai-sdk/openai-compatible`.
+
 ## Run 01 — 2026-06-29 — Foundation
 
 - Enabled Lovable Cloud (Postgres, Auth, Storage).
