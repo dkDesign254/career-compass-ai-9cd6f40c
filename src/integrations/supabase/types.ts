@@ -620,6 +620,7 @@ export type Database = {
       }
       resumes: {
         Row: {
+          analysis: Json | null
           ats_analysis: Json | null
           ats_score: number | null
           created_at: string
@@ -629,11 +630,13 @@ export type Database = {
           is_primary: boolean
           parsed_data: Json | null
           raw_text: string | null
+          target_role: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          analysis?: Json | null
           ats_analysis?: Json | null
           ats_score?: number | null
           created_at?: string
@@ -643,11 +646,13 @@ export type Database = {
           is_primary?: boolean
           parsed_data?: Json | null
           raw_text?: string | null
+          target_role?: string | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          analysis?: Json | null
           ats_analysis?: Json | null
           ats_score?: number | null
           created_at?: string
@@ -657,6 +662,7 @@ export type Database = {
           is_primary?: boolean
           parsed_data?: Json | null
           raw_text?: string | null
+          target_role?: string | null
           title?: string
           updated_at?: string
           user_id?: string

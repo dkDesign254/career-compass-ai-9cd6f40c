@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Target, Brain, FileCheck2, Sparkles, Briefcase, ArrowRight, Zap } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getQuotaStatus } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — CareerPilot AI" }] }),
@@ -19,6 +22,8 @@ const modules = [
 ] as const;
 
 function Dashboard() {
+  const fn = useServerFn(getQuotaStatus);
+  const { data: quota } = useQuery({ queryKey: ["ai-quota"], queryFn: () => fn(), staleTime: 30_000 });
   return (
     <AppShell>
       <div className="mx-auto max-w-6xl space-y-8">
@@ -46,7 +51,7 @@ function Dashboard() {
           {[
             { label: "Employability score", value: "—" },
             { label: "Applications", value: "0" },
-            { label: "AI runs this month", value: "0 / 2" },
+          { label: "AI runs this month", value: quota ? (quota.isPaid ? `${quota.used}` : `${quota.used} / ${quota.limit}`) : "—" },
           ].map((s) => (
             <Card key={s.label}>
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{s.label}</CardTitle></CardHeader>
@@ -77,7 +82,7 @@ function Dashboard() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Modules above are scaffolded — full functionality lands in Run 2.
+          AI modules are live. Job board, recruiter portal and subscriptions arrive in Runs 3–5.
         </p>
       </div>
     </AppShell>
