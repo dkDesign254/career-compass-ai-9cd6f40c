@@ -138,14 +138,14 @@ export const scoreEmployability = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "employability");
     try {
       const gateway = createLovableAiGatewayProvider(getApiKey());
-      const { experimental_output } = await generateText({
+      const { output: aiOutput } = await generateText({
         model: gateway(MODEL),
-        experimental_output: Output.object({ schema: EmployabilitySchema }),
+        output: Output.object({ schema: EmployabilitySchema }),
         system:
           "You are an expert career coach. Produce an honest, evidence-based employability assessment for the candidate based on the profile they provide. Be specific and constructive.",
         prompt: `Candidate profile:\n${profileSummary(profile)}`,
       });
-      const result = experimental_output;
+      const result = aiOutput;
       await supabase
         .from("career_profiles")
         .update({ recommendations: { ...(profile.recommendations ?? {}), employability: result } })
@@ -186,14 +186,14 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "skill_gap");
     try {
       const gateway = createLovableAiGatewayProvider(getApiKey());
-      const { experimental_output } = await generateText({
+      const { output: aiOutput } = await generateText({
         model: gateway(MODEL),
-        experimental_output: Output.object({ schema: SkillGapSchema }),
+        output: Output.object({ schema: SkillGapSchema }),
         system:
           "You are a senior recruiter and career coach. Identify the skills the candidate must build to land their target role and produce a focused learning plan.",
         prompt: `Profile:\n${profileSummary(profile)}\n\nTarget role: ${profile.target_role}.`,
       });
-      const result = experimental_output;
+      const result = aiOutput;
       await supabase
         .from("career_profiles")
         .update({ recommendations: { ...(profile.recommendations ?? {}), skill_gap: result } })
@@ -230,14 +230,14 @@ export const optimizeResume = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "resume_ats");
     try {
       const gateway = createLovableAiGatewayProvider(getApiKey());
-      const { experimental_output } = await generateText({
+      const { output: aiOutput } = await generateText({
         model: gateway(MODEL),
-        experimental_output: Output.object({ schema: ResumeSchema }),
+        output: Output.object({ schema: ResumeSchema }),
         system:
           "You are an ATS expert. Score the resume against the target role, flag issues, and rewrite the summary plus key bullets to be quantified and ATS-friendly.",
         prompt: `Target role: ${data.target_role ?? "general"}\n\nResume:\n${data.resume_text}`,
       });
-      const result = experimental_output;
+      const result = aiOutput;
       const { data: row } = await supabase
         .from("resumes")
         .insert({
@@ -278,14 +278,14 @@ export const recommendCareers = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "recommendations");
     try {
       const gateway = createLovableAiGatewayProvider(getApiKey());
-      const { experimental_output } = await generateText({
+      const { output: aiOutput } = await generateText({
         model: gateway(MODEL),
-        experimental_output: Output.object({ schema: RecsSchema }),
+        output: Output.object({ schema: RecsSchema }),
         system:
           "You are a career strategist. Recommend 3-5 career paths the candidate could pursue, each with a fit score, rationale and an actionable 90-day plan.",
         prompt: `Profile:\n${profileSummary(profile)}`,
       });
-      const result = experimental_output;
+      const result = aiOutput;
       await supabase
         .from("career_profiles")
         .update({ recommendations: { ...(profile.recommendations ?? {}), careers: result } })
@@ -364,14 +364,14 @@ export const generateInterviewKit = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "interview_kit");
     try {
       const gateway = createLovableAiGatewayProvider(getApiKey());
-      const { experimental_output } = await generateText({
+      const { output: aiOutput } = await generateText({
         model: gateway(MODEL),
-        experimental_output: Output.object({ schema: InterviewSchema }),
+        output: Output.object({ schema: InterviewSchema }),
         system:
           "You are an interview coach. Produce 6-8 likely interview questions for the candidate's target role, mixing behavioral, technical, situational, and culture-fit. For each, give a tight sample answer tailored to the candidate's actual profile.",
         prompt: `Role: ${data.job_title} at ${data.company ?? "the company"}\nJD: ${data.job_description ?? "(not provided)"}\n\nCandidate profile:\n${profileSummary(profile)}`,
       });
-      const result = experimental_output;
+      const result = aiOutput;
       await supabase.from("interview_sessions").insert({
         user_id: userId,
         questions: result.questions,
