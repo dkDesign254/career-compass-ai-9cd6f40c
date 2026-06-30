@@ -116,7 +116,7 @@ function ResumePage() {
             </div>
 
             <SectionCard title="Issues to fix">
-              <ul className="space-y-1 text-sm">{m.data.issues.map((s, i) => <li key={i}>• {s}</li>)}</ul>
+              <ul className="space-y-1 text-sm">{m.data.issues.map((s: string, i: number) => <li key={i}>• {s}</li>)}</ul>
             </SectionCard>
 
             <SectionCard title="Rewritten summary">
@@ -124,7 +124,7 @@ function ResumePage() {
             </SectionCard>
 
             <SectionCard title="Suggested bullets">
-              <ul className="space-y-2 text-sm">{m.data.bullet_suggestions.map((s, i) => <li key={i}>• {s}</li>)}</ul>
+              <ul className="space-y-2 text-sm">{m.data.bullet_suggestions.map((s: string, i: number) => <li key={i}>• {s}</li>)}</ul>
             </SectionCard>
           </div>
         )}
