@@ -14,11 +14,8 @@ export async function extractResumeText(file: File): Promise<string> {
     return value as string;
   }
   if (name.endsWith(".pdf")) {
-    // @ts-expect-error - subpath types
-    const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    // Worker: use the bundled module worker URL via Vite.
-    // @ts-expect-error - vite url import
-    const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
+    const pdfjs: any = await import(/* @vite-ignore */ "pdfjs-dist/legacy/build/pdf.mjs" as any);
+    const workerUrl = (await import(/* @vite-ignore */ "pdfjs-dist/build/pdf.worker.mjs?url" as any)).default as string;
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data: buf }).promise;
