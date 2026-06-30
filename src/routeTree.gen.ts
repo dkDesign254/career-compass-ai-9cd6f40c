@@ -25,6 +25,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
 import { Route as AuthenticatedRecruiterNewJobRouteImport } from './routes/_authenticated/recruiter.new-job'
+import { Route as AuthenticatedRecruiterApplicantsJobIdRouteImport } from './routes/_authenticated/recruiter.applicants.$jobId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -109,6 +110,12 @@ const AuthenticatedRecruiterNewJobRoute =
     path: '/new-job',
     getParentRoute: () => AuthenticatedRecruiterRoute,
   } as any)
+const AuthenticatedRecruiterApplicantsJobIdRoute =
+  AuthenticatedRecruiterApplicantsJobIdRouteImport.update({
+    id: '/applicants/$jobId',
+    path: '/applicants/$jobId',
+    getParentRoute: () => AuthenticatedRecruiterRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesByTo {
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -162,6 +171,7 @@ export interface FileRoutesById {
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/skill-gap': typeof AuthenticatedSkillGapRoute
   '/_authenticated/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/_authenticated/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/resume'
     | '/skill-gap'
     | '/recruiter/new-job'
+    | '/recruiter/applicants/$jobId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/resume'
     | '/skill-gap'
     | '/recruiter/new-job'
+    | '/recruiter/applicants/$jobId'
   id:
     | '__root__'
     | '/'
@@ -216,6 +228,7 @@ export interface FileRouteTypes {
     | '/_authenticated/resume'
     | '/_authenticated/skill-gap'
     | '/_authenticated/recruiter/new-job'
+    | '/_authenticated/recruiter/applicants/$jobId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -339,16 +352,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecruiterNewJobRouteImport
       parentRoute: typeof AuthenticatedRecruiterRoute
     }
+    '/_authenticated/recruiter/applicants/$jobId': {
+      id: '/_authenticated/recruiter/applicants/$jobId'
+      path: '/applicants/$jobId'
+      fullPath: '/recruiter/applicants/$jobId'
+      preLoaderRoute: typeof AuthenticatedRecruiterApplicantsJobIdRouteImport
+      parentRoute: typeof AuthenticatedRecruiterRoute
+    }
   }
 }
 
 interface AuthenticatedRecruiterRouteChildren {
   AuthenticatedRecruiterNewJobRoute: typeof AuthenticatedRecruiterNewJobRoute
+  AuthenticatedRecruiterApplicantsJobIdRoute: typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 
 const AuthenticatedRecruiterRouteChildren: AuthenticatedRecruiterRouteChildren =
   {
     AuthenticatedRecruiterNewJobRoute: AuthenticatedRecruiterNewJobRoute,
+    AuthenticatedRecruiterApplicantsJobIdRoute:
+      AuthenticatedRecruiterApplicantsJobIdRoute,
   }
 
 const AuthenticatedRecruiterRouteWithChildren =
