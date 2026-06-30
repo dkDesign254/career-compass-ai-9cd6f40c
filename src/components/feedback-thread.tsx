@@ -46,7 +46,7 @@ export function FeedbackThread({ applicationId, currentUserId }: { applicationId
         <span className="text-xs text-muted-foreground">{new Date(data.thread.created_at).toLocaleString()}</span>
       </div>
       <div className="max-h-80 space-y-3 overflow-y-auto rounded-lg border bg-muted/30 p-3">
-        {data.messages.map((msg) => {
+        {data.messages.map((msg: any) => {
           const mine = msg.sender_id === currentUserId;
           return (
             <div key={msg.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
