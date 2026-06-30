@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSkillGapRouteImport } from './routes/_authenticated/skill-gap'
 import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated/resume'
+import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated/recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -51,6 +52,11 @@ const AuthenticatedSkillGapRoute = AuthenticatedSkillGapRouteImport.update({
 const AuthenticatedResumeRoute = AuthenticatedResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRecruiterRoute = AuthenticatedRecruiterRouteImport.update({
+  id: '/recruiter',
+  path: '/recruiter',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRecommendationsRoute =
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/recruiter': typeof AuthenticatedRecruiterRoute
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/recruiter': typeof AuthenticatedRecruiterRoute
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/_authenticated/recruiter': typeof AuthenticatedRecruiterRoute
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/skill-gap': typeof AuthenticatedSkillGapRoute
 }
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/recommendations'
+    | '/recruiter'
     | '/resume'
     | '/skill-gap'
   fileRoutesByTo: FileRoutesByTo
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/recommendations'
+    | '/recruiter'
     | '/resume'
     | '/skill-gap'
   id:
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/recommendations'
+    | '/_authenticated/recruiter'
     | '/_authenticated/resume'
     | '/_authenticated/skill-gap'
   fileRoutesById: FileRoutesById
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/resume'
       fullPath: '/resume'
       preLoaderRoute: typeof AuthenticatedResumeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recruiter': {
+      id: '/_authenticated/recruiter'
+      path: '/recruiter'
+      fullPath: '/recruiter'
+      preLoaderRoute: typeof AuthenticatedRecruiterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recommendations': {
@@ -312,6 +331,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
+  AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRoute
   AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
   AuthenticatedSkillGapRoute: typeof AuthenticatedSkillGapRoute
 }
@@ -325,6 +345,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
+  AuthenticatedRecruiterRoute: AuthenticatedRecruiterRoute,
   AuthenticatedResumeRoute: AuthenticatedResumeRoute,
   AuthenticatedSkillGapRoute: AuthenticatedSkillGapRoute,
 }

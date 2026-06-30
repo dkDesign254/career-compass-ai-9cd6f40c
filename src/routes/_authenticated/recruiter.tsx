@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Briefcase, Plus, Users } from "lucide-react";
@@ -15,10 +15,6 @@ export const Route = createFileRoute("/_authenticated/recruiter")({
 });
 
 function RecruiterIndex() {
-  const loc = useLocation();
-  // If a child path is matched, render the outlet so child routes can show.
-  if (loc.pathname !== "/recruiter") return <AppShell><Outlet /></AppShell>;
-
   const rolesFn = useServerFn(getMyRoles);
   const jobsFn = useServerFn(listMyJobs);
   const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn() });
