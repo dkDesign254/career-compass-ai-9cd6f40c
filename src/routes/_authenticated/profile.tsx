@@ -7,6 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getMyRoles } from "@/lib/jobs.functions";
+import { becomeRecruiter } from "@/lib/recruiter.functions";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — CareerPilot AI" }] }),
@@ -17,6 +22,16 @@ function ProfilePage() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [saving, setSaving] = useState(false);
+  const rolesFn = useServerFn(getMyRoles);
+  const recruiterFn = useServerFn(becomeRecruiter);
+  const qc = useQueryClient();
+  const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn() });
+  const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
+  const enable = useMutation({
+    mutationFn: () => recruiterFn(),
+    onSuccess: () => { toast.success("Recruiter access granted"); qc.invalidateQueries({ queryKey: ["my-roles"] }); },
+    onError: (e: any) => toast.error(e.message ?? "Failed"),
+  });
 
   useEffect(() => {
     (async () => {
@@ -55,6 +70,20 @@ function ProfilePage() {
           <CardContent className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Edit your goals, skills, and experience.</p>
             <Button asChild variant="outline"><Link to="/onboarding">Edit profile</Link></Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Roles & access</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-2">{(roles ?? []).map((r) => <Badge key={r} variant="secondary">{r}</Badge>)}</div>
+            {!isRecruiter ? (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">Hiring? Enable recruiter access to post jobs and review applicants.</p>
+                <Button onClick={() => enable.mutate()} disabled={enable.isPending}>{enable.isPending ? "Enabling…" : "Enable recruiter"}</Button>
+              </div>
+            ) : (
+              <Button asChild variant="outline"><Link to="/recruiter">Open recruiter portal</Link></Button>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -624,7 +624,9 @@ export type Database = {
           ats_analysis: Json | null
           ats_score: number | null
           created_at: string
+          file_name: string | null
           file_path: string | null
+          file_size: number | null
           file_type: string | null
           id: string
           is_primary: boolean
@@ -640,7 +642,9 @@ export type Database = {
           ats_analysis?: Json | null
           ats_score?: number | null
           created_at?: string
+          file_name?: string | null
           file_path?: string | null
+          file_size?: number | null
           file_type?: string | null
           id?: string
           is_primary?: boolean
@@ -656,7 +660,9 @@ export type Database = {
           ats_analysis?: Json | null
           ats_score?: number | null
           created_at?: string
+          file_name?: string | null
           file_path?: string | null
+          file_size?: number | null
           file_type?: string | null
           id?: string
           is_primary?: boolean

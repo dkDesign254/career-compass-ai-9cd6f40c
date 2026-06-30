@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSkillGapRouteImport } from './routes/_authenticated/skill-gap'
 import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated/resume'
+import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated/recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -22,6 +23,9 @@ import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/j
 import { Route as AuthenticatedEmployabilityRouteImport } from './routes/_authenticated/employability'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
+import { Route as AuthenticatedRecruiterNewJobRouteImport } from './routes/_authenticated/recruiter.new-job'
+import { Route as AuthenticatedRecruiterApplicantsJobIdRouteImport } from './routes/_authenticated/recruiter.applicants.$jobId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -50,6 +54,11 @@ const AuthenticatedSkillGapRoute = AuthenticatedSkillGapRouteImport.update({
 const AuthenticatedResumeRoute = AuthenticatedResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRecruiterRoute = AuthenticatedRecruiterRouteImport.update({
+  id: '/recruiter',
+  path: '/recruiter',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRecommendationsRoute =
@@ -89,11 +98,30 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedApplicationsRoute =
+  AuthenticatedApplicationsRouteImport.update({
+    id: '/applications',
+    path: '/applications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRecruiterNewJobRoute =
+  AuthenticatedRecruiterNewJobRouteImport.update({
+    id: '/new-job',
+    path: '/new-job',
+    getParentRoute: () => AuthenticatedRecruiterRoute,
+  } as any)
+const AuthenticatedRecruiterApplicantsJobIdRoute =
+  AuthenticatedRecruiterApplicantsJobIdRouteImport.update({
+    id: '/applicants/$jobId',
+    path: '/applicants/$jobId',
+    getParentRoute: () => AuthenticatedRecruiterRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/applications': typeof AuthenticatedApplicationsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employability': typeof AuthenticatedEmployabilityRoute
@@ -101,13 +129,17 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/applications': typeof AuthenticatedApplicationsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/employability': typeof AuthenticatedEmployabilityRoute
@@ -115,8 +147,11 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +159,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/applications': typeof AuthenticatedApplicationsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/employability': typeof AuthenticatedEmployabilityRoute
@@ -131,8 +167,11 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/_authenticated/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/_authenticated/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/_authenticated/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +179,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/applications'
     | '/billing'
     | '/dashboard'
     | '/employability'
@@ -147,13 +187,17 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/recommendations'
+    | '/recruiter'
     | '/resume'
     | '/skill-gap'
+    | '/recruiter/new-job'
+    | '/recruiter/applicants/$jobId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/applications'
     | '/billing'
     | '/dashboard'
     | '/employability'
@@ -161,14 +205,18 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/recommendations'
+    | '/recruiter'
     | '/resume'
     | '/skill-gap'
+    | '/recruiter/new-job'
+    | '/recruiter/applicants/$jobId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/applications'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/employability'
@@ -176,8 +224,11 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/recommendations'
+    | '/_authenticated/recruiter'
     | '/_authenticated/resume'
     | '/_authenticated/skill-gap'
+    | '/_authenticated/recruiter/new-job'
+    | '/_authenticated/recruiter/applicants/$jobId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -231,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResumeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/recruiter': {
+      id: '/_authenticated/recruiter'
+      path: '/recruiter'
+      fullPath: '/recruiter'
+      preLoaderRoute: typeof AuthenticatedRecruiterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recommendations': {
       id: '/_authenticated/recommendations'
       path: '/recommendations'
@@ -280,10 +338,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/applications': {
+      id: '/_authenticated/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof AuthenticatedApplicationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recruiter/new-job': {
+      id: '/_authenticated/recruiter/new-job'
+      path: '/new-job'
+      fullPath: '/recruiter/new-job'
+      preLoaderRoute: typeof AuthenticatedRecruiterNewJobRouteImport
+      parentRoute: typeof AuthenticatedRecruiterRoute
+    }
+    '/_authenticated/recruiter/applicants/$jobId': {
+      id: '/_authenticated/recruiter/applicants/$jobId'
+      path: '/applicants/$jobId'
+      fullPath: '/recruiter/applicants/$jobId'
+      preLoaderRoute: typeof AuthenticatedRecruiterApplicantsJobIdRouteImport
+      parentRoute: typeof AuthenticatedRecruiterRoute
+    }
   }
 }
 
+interface AuthenticatedRecruiterRouteChildren {
+  AuthenticatedRecruiterNewJobRoute: typeof AuthenticatedRecruiterNewJobRoute
+  AuthenticatedRecruiterApplicantsJobIdRoute: typeof AuthenticatedRecruiterApplicantsJobIdRoute
+}
+
+const AuthenticatedRecruiterRouteChildren: AuthenticatedRecruiterRouteChildren =
+  {
+    AuthenticatedRecruiterNewJobRoute: AuthenticatedRecruiterNewJobRoute,
+    AuthenticatedRecruiterApplicantsJobIdRoute:
+      AuthenticatedRecruiterApplicantsJobIdRoute,
+  }
+
+const AuthenticatedRecruiterRouteWithChildren =
+  AuthenticatedRecruiterRoute._addFileChildren(
+    AuthenticatedRecruiterRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedApplicationsRoute: typeof AuthenticatedApplicationsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmployabilityRoute: typeof AuthenticatedEmployabilityRoute
@@ -291,11 +388,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
+  AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRouteWithChildren
   AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
   AuthenticatedSkillGapRoute: typeof AuthenticatedSkillGapRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedApplicationsRoute: AuthenticatedApplicationsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmployabilityRoute: AuthenticatedEmployabilityRoute,
@@ -303,6 +402,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
+  AuthenticatedRecruiterRoute: AuthenticatedRecruiterRouteWithChildren,
   AuthenticatedResumeRoute: AuthenticatedResumeRoute,
   AuthenticatedSkillGapRoute: AuthenticatedSkillGapRoute,
 }

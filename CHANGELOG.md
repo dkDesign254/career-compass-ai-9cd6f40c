@@ -2,6 +2,27 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 03 — Recruiter portal, applications, file uploads
+
+- Storage: private `resumes` bucket with per-user RLS (read/write/update/delete scoped to `auth.uid()`).
+- DB: `resumes.file_path / file_name / file_size`; auto `updated_at` triggers on `jobs` and `applications`; recruiter→applicant notification RLS.
+- Server functions:
+  - `src/lib/recruiter.functions.ts` — `becomeRecruiter`, `listMyJobs`, `createJob` (free-tier 30-application cap), `listApplicants` (joins resume ATS + applicant profile), `decideApplication` (writes status + feedback thread + notification).
+  - `src/lib/jobs.functions.ts` — `listOpenJobs` (search + work_mode), `applyToJob` (validates open + cap), `listMyApplications`, `listMyResumes`, `getMyRoles`.
+  - `src/lib/resume-parse.ts` — client-side PDF / DOCX / TXT extraction using `pdfjs-dist` (worker via `?url`) and `mammoth`, dynamically imported.
+- Routes:
+  - `/recruiter` — pipeline overview; enable-recruiter affordance falls back to `/profile`.
+  - `/recruiter/new-job` — full job posting form.
+  - `/recruiter/applicants/:jobId` — applicant pipeline with ATS badge, shortlist / proceed / regret actions and editable preset messages that auto-open a feedback thread.
+  - `/jobs` — real job board with search, work-mode filter, resume picker, and cover-note dialog.
+  - `/applications` — student tracker with live feedback threads.
+  - `/profile` — roles panel; one-click "Enable recruiter" upgrades the user role and unlocks the recruiter sidebar entry.
+- UI:
+  - `FeedbackThread` component (real-time-ready Q-invalidated messaging).
+  - Sidebar shows **My Applications** for everyone and **Recruiter** when role grants it.
+  - Resume page now supports drag-in PDF/DOCX uploads; extracted text auto-populates and the storage path is linked to the saved `resumes` row.
+- Quota / role checks unchanged; recruiter actions gated by `recruiter | company_admin | admin`.
+
 ## Run 02 — 2026-06-29 — Core AI modules (student side)
 
 - 5-step onboarding wizard (Goals → Skills → Education → Experience → Review) with animated step transitions, tag input, persistence to `career_profiles`, and edit-on-return.
