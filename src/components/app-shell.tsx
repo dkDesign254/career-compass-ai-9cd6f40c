@@ -2,23 +2,30 @@ import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Compass, LayoutDashboard, FileCheck2, Target, Brain, Sparkles,
-  Briefcase, Bell, LogOut, Menu, X, HelpCircle, User,
+  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { HelpButton } from "@/components/help-button";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getMyRoles } from "@/lib/jobs.functions";
 
-const nav = [
+const baseNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/employability", label: "Employability", icon: Target },
   { to: "/skill-gap", label: "Skill Gap", icon: Brain },
   { to: "/resume", label: "Resume / ATS", icon: FileCheck2 },
   { to: "/recommendations", label: "Recommendations", icon: Sparkles },
   { to: "/jobs", label: "Jobs", icon: Briefcase },
+  { to: "/applications", label: "My Applications", icon: ClipboardList },
+] as const;
+
+const recruiterNav = [
+  { to: "/recruiter", label: "Recruiter", icon: Building2 },
 ] as const;
 
 export function AppShell({ children }: { children?: ReactNode }) {
@@ -26,6 +33,10 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const rolesFn = useServerFn(getMyRoles);
+  const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn(), staleTime: 60_000 });
+  const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
+  const nav = isRecruiter ? [...baseNav, ...recruiterNav] : baseNav;
 
   useEffect(() => setOpen(false), [location.pathname]);
 
