@@ -2,6 +2,16 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 04 — Job scraping (Kenya + international)
+
+- Fix: `ai_run_usage` RLS now allows self-inserts (`auth.uid() = user_id`), unblocking every AI module (Employability, Skill Gap, Resume/ATS, Recommendations, Cover Letters, Interview Kit).
+- DB: `jobs.is_scraped / source_url / external_id / scraped_at`; partial unique index `(source, external_id)` for idempotent re-runs; `job_sources` table (name, base_url, region, enabled, last_scraped_at, last_status, last_error) with RLS — admins manage, authenticated users read.
+- Firecrawl connector wired via `FIRECRAWL_API_KEY`. `src/lib/scrape.server.ts` extracts structured `jobs[]` (title/company/location/url/description/employment_type/work_mode) per source URL using Firecrawl JSON mode.
+- Server functions (`src/lib/scrape.functions.ts`, admin-gated via `has_role`): `listJobSources`, `toggleJobSource`, `addJobSource`, `runJobScrape` (all sources or one). Normalizes work_mode/employment_type and upserts on `(source, external_id)`.
+- Cron endpoint: `POST /api/public/hooks/scrape-jobs` — authenticated with Supabase publishable key in the `apikey` header for scheduled runs.
+- Seeded sources: BrighterMonday, MyJobMag, Fuzu (Kenya); Remote OK, We Work Remotely (Global).
+- UI: `/admin/scraping` — add source, per-source enable toggle, per-source Scrape button, "Run all now"; shows last status / error. `/jobs` — scraped listings are badged with the source and open externally via "View on {source}"; internal jobs keep the Apply dialog. Sidebar exposes **Job Sources** only for `admin`.
+
 ## Run 03 — Recruiter portal, applications, file uploads
 
 - Storage: private `resumes` bucket with per-user RLS (read/write/update/delete scoped to `auth.uid()`).
