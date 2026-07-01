@@ -25,6 +25,8 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
 import { Route as AuthenticatedRecruiterNewJobRouteImport } from './routes/_authenticated/recruiter.new-job'
+import { Route as AuthenticatedAdminScrapingRouteImport } from './routes/_authenticated/admin.scraping'
+import { Route as ApiPublicHooksScrapeJobsRouteImport } from './routes/api/public/hooks/scrape-jobs'
 import { Route as AuthenticatedRecruiterApplicantsJobIdRouteImport } from './routes/_authenticated/recruiter.applicants.$jobId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -110,6 +112,18 @@ const AuthenticatedRecruiterNewJobRoute =
     path: '/new-job',
     getParentRoute: () => AuthenticatedRecruiterRoute,
   } as any)
+const AuthenticatedAdminScrapingRoute =
+  AuthenticatedAdminScrapingRouteImport.update({
+    id: '/admin/scraping',
+    path: '/admin/scraping',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicHooksScrapeJobsRoute =
+  ApiPublicHooksScrapeJobsRouteImport.update({
+    id: '/api/public/hooks/scrape-jobs',
+    path: '/api/public/hooks/scrape-jobs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedRecruiterApplicantsJobIdRoute =
   AuthenticatedRecruiterApplicantsJobIdRouteImport.update({
     id: '/applicants/$jobId',
@@ -132,8 +146,10 @@ export interface FileRoutesByFullPath {
   '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
   '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
+  '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,8 +166,10 @@ export interface FileRoutesByTo {
   '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/resume': typeof AuthenticatedResumeRoute
   '/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
   '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
+  '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,8 +188,10 @@ export interface FileRoutesById {
   '/_authenticated/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/skill-gap': typeof AuthenticatedSkillGapRoute
+  '/_authenticated/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/_authenticated/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
   '/_authenticated/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
+  '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -190,8 +210,10 @@ export interface FileRouteTypes {
     | '/recruiter'
     | '/resume'
     | '/skill-gap'
+    | '/admin/scraping'
     | '/recruiter/new-job'
     | '/recruiter/applicants/$jobId'
+    | '/api/public/hooks/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -208,8 +230,10 @@ export interface FileRouteTypes {
     | '/recruiter'
     | '/resume'
     | '/skill-gap'
+    | '/admin/scraping'
     | '/recruiter/new-job'
     | '/recruiter/applicants/$jobId'
+    | '/api/public/hooks/scrape-jobs'
   id:
     | '__root__'
     | '/'
@@ -227,8 +251,10 @@ export interface FileRouteTypes {
     | '/_authenticated/recruiter'
     | '/_authenticated/resume'
     | '/_authenticated/skill-gap'
+    | '/_authenticated/admin/scraping'
     | '/_authenticated/recruiter/new-job'
     | '/_authenticated/recruiter/applicants/$jobId'
+    | '/api/public/hooks/scrape-jobs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +262,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicHooksScrapeJobsRoute: typeof ApiPublicHooksScrapeJobsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -352,6 +379,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecruiterNewJobRouteImport
       parentRoute: typeof AuthenticatedRecruiterRoute
     }
+    '/_authenticated/admin/scraping': {
+      id: '/_authenticated/admin/scraping'
+      path: '/admin/scraping'
+      fullPath: '/admin/scraping'
+      preLoaderRoute: typeof AuthenticatedAdminScrapingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/hooks/scrape-jobs': {
+      id: '/api/public/hooks/scrape-jobs'
+      path: '/api/public/hooks/scrape-jobs'
+      fullPath: '/api/public/hooks/scrape-jobs'
+      preLoaderRoute: typeof ApiPublicHooksScrapeJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/recruiter/applicants/$jobId': {
       id: '/_authenticated/recruiter/applicants/$jobId'
       path: '/applicants/$jobId'
@@ -391,6 +432,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRouteWithChildren
   AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
   AuthenticatedSkillGapRoute: typeof AuthenticatedSkillGapRoute
+  AuthenticatedAdminScrapingRoute: typeof AuthenticatedAdminScrapingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -405,6 +447,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRecruiterRoute: AuthenticatedRecruiterRouteWithChildren,
   AuthenticatedResumeRoute: AuthenticatedResumeRoute,
   AuthenticatedSkillGapRoute: AuthenticatedSkillGapRoute,
+  AuthenticatedAdminScrapingRoute: AuthenticatedAdminScrapingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -415,6 +458,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicHooksScrapeJobsRoute: ApiPublicHooksScrapeJobsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

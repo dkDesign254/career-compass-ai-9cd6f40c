@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Compass, LayoutDashboard, FileCheck2, Target, Brain, Sparkles,
-  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2,
+  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2, Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -28,6 +28,10 @@ const recruiterNav = [
   { to: "/recruiter", label: "Recruiter", icon: Building2 },
 ] as const;
 
+const adminNav = [
+  { to: "/admin/scraping", label: "Job Sources", icon: Globe },
+] as const;
+
 export function AppShell({ children }: { children?: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,7 +40,12 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const rolesFn = useServerFn(getMyRoles);
   const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn(), staleTime: 60_000 });
   const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
-  const nav = isRecruiter ? [...baseNav, ...recruiterNav] : baseNav;
+  const isAdmin = (roles ?? []).includes("admin");
+  const nav = [
+    ...baseNav,
+    ...(isRecruiter ? recruiterNav : []),
+    ...(isAdmin ? adminNav : []),
+  ];
 
   useEffect(() => setOpen(false), [location.pathname]);
 

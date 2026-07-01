@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Briefcase, MapPin, Search, Send } from "lucide-react";
+import { Briefcase, ExternalLink, MapPin, Search, Send } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,7 @@ function JobsPage() {
 
         {isLoading ? <p>Loading…</p> :
          !jobs?.length ? (
-           <Card><CardContent className="py-12 text-center text-muted-foreground">No open roles match your filters yet. Scraped Kenya + remote roles arrive in Run 4.</CardContent></Card>
+           <Card><CardContent className="py-12 text-center text-muted-foreground">No open roles match your filters yet. Try clearing filters or ask an admin to run the scraper.</CardContent></Card>
          ) : (
           <div className="grid gap-3">
             {jobs.map((j: any) => (
@@ -82,9 +82,12 @@ function JobsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CardTitle className="text-base">{j.title}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{j.companies?.name ?? "—"} · <MapPin className="inline h-3 w-3" /> {j.location ?? "—"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {j.companies?.name ?? j.source ?? "—"} · <MapPin className="inline h-3 w-3" /> {j.location ?? "—"}
+                      </p>
                     </div>
                     <div className="flex flex-wrap gap-1">
+                      {j.is_scraped && <Badge variant="outline" className="border-coral/40 text-coral">{j.source}</Badge>}
                       {j.work_mode && <Badge variant="secondary">{j.work_mode}</Badge>}
                       {j.employment_type && <Badge variant="outline">{j.employment_type.replace("_", "-")}</Badge>}
                     </div>
@@ -94,9 +97,17 @@ function JobsPage() {
                   <span className="text-muted-foreground">
                     {j.salary_min ? `${j.salary_currency ?? ""} ${j.salary_min}${j.salary_max ? `–${j.salary_max}` : ""}` : "Salary not listed"}
                   </span>
-                  <Button size="sm" onClick={() => setOpen({ id: j.id, title: j.title })}>
-                    <Send className="mr-2 h-3 w-3" /> Apply
-                  </Button>
+                  {j.is_scraped && j.source_url ? (
+                    <Button asChild size="sm" variant="outline">
+                      <a href={j.source_url} target="_blank" rel="noreferrer">
+                        <ExternalLink className="mr-2 h-3 w-3" /> View on {j.source}
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={() => setOpen({ id: j.id, title: j.title })}>
+                      <Send className="mr-2 h-3 w-3" /> Apply
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}
