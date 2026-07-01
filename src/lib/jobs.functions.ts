@@ -18,7 +18,7 @@ export const listOpenJobs = createServerFn({ method: "POST" })
     const { supabase } = context as any;
     let q = supabase
       .from("jobs")
-      .select("id, title, location, work_mode, employment_type, salary_min, salary_max, salary_currency, deadline, created_at, application_count, application_cap, company_id, companies(name, logo_url)")
+      .select("id, title, location, work_mode, employment_type, salary_min, salary_max, salary_currency, deadline, created_at, application_count, application_cap, company_id, is_scraped, source, source_url, companies(name, logo_url)")
       .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(60);
