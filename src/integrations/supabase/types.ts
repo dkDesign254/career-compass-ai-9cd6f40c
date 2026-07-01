@@ -457,6 +457,45 @@ export type Database = {
           },
         ]
       }
+      job_sources: {
+        Row: {
+          base_url: string
+          created_at: string
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_scraped_at: string | null
+          last_status: string | null
+          name: string
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_scraped_at?: string | null
+          last_status?: string | null
+          name: string
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_scraped_at?: string | null
+          last_status?: string | null
+          name?: string
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           application_cap: number | null
@@ -468,6 +507,7 @@ export type Database = {
           employment_type: string | null
           external_id: string | null
           id: string
+          is_scraped: boolean
           location: string | null
           posted_by: string | null
           requirements: string | null
@@ -494,6 +534,7 @@ export type Database = {
           employment_type?: string | null
           external_id?: string | null
           id?: string
+          is_scraped?: boolean
           location?: string | null
           posted_by?: string | null
           requirements?: string | null
@@ -520,6 +561,7 @@ export type Database = {
           employment_type?: string | null
           external_id?: string | null
           id?: string
+          is_scraped?: boolean
           location?: string | null
           posted_by?: string | null
           requirements?: string | null
