@@ -178,7 +178,7 @@ export const decideApplication = createServerFn({ method: "POST" })
 
     await supabase.from("notifications").insert({
       user_id: (app as any).user_id,
-      kind: "application_decision",
+      type: "application_decision",
       title: `Update on your application: ${(app as any).jobs.title}`,
       body: data.decision === "proceed" ? "You've been invited to the next round." : data.decision === "shortlist" ? "You've been shortlisted." : "The role has been filled by another candidate.",
       link: `/applications`,
