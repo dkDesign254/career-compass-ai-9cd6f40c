@@ -106,8 +106,9 @@ const BlogInput = z.object({
   title: z.string().min(2).max(200),
   slug: z.string().min(2).max(200).regex(/^[a-z0-9-]+$/, "lowercase, digits and dashes only"),
   excerpt: z.string().max(400).optional(),
-  content: z.string().min(1),
-  cover_url: z.string().url().nullable().optional(),
+  body_md: z.string().min(1),
+  cover_image_url: z.string().url().nullable().optional(),
+  tags: z.array(z.string()).max(20).optional(),
   published: z.boolean().default(false),
 });
 
@@ -131,6 +132,7 @@ export const upsertBlogPost = createServerFn({ method: "POST" })
     if (!isAdmin && !isCms) throw new Error("Editor access required.");
     const { id, ...post } = data;
     const payload: any = { ...post, author_id: userId };
+    if (post.published && !id) payload.published_at = new Date().toISOString();
     if (id) {
       const { error } = await supabase.from("blog_posts").update(payload).eq("id", id);
       if (error) throw new Error(error.message);
@@ -170,7 +172,7 @@ export const grantSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => z.object({
     user_id: z.string().uuid(),
-    plan: z.enum(["free", "pro", "team"]),
+    tier: z.enum(["free", "pro", "team"]),
     months: z.number().int().min(1).max(60).default(1),
   }).parse(i))
   .handler(async ({ context, data }) => {
@@ -179,13 +181,13 @@ export const grantSubscription = createServerFn({ method: "POST" })
     const now = new Date();
     const ends = new Date(now.getTime() + data.months * 30 * 24 * 3600 * 1000).toISOString();
     const { data: existing } = await supabase.from("subscriptions").select("id").eq("user_id", data.user_id).maybeSingle();
-    const payload = { user_id: data.user_id, plan: data.plan, status: "active", current_period_end: ends };
+    const payload = { user_id: data.user_id, tier: data.tier, status: "active", current_period_end: ends };
     if (existing) {
       await supabase.from("subscriptions").update(payload).eq("id", existing.id);
     } else {
       await supabase.from("subscriptions").insert(payload);
     }
-    await supabase.rpc("log_admin_action", { _action: "grant_subscription", _entity_type: "subscription", _entity_id: data.user_id, _metadata: { plan: data.plan, months: data.months } });
+    await supabase.rpc("log_admin_action", { _action: "grant_subscription", _entity_type: "subscription", _entity_id: data.user_id, _metadata: { tier: data.tier, months: data.months } });
     return { ok: true };
   });
 
@@ -195,7 +197,7 @@ export const revokeSubscription = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { supabase } = context as any;
-    await supabase.from("subscriptions").update({ status: "canceled", plan: "free" }).eq("user_id", data.user_id);
+    await supabase.from("subscriptions").update({ status: "canceled", tier: "free" }).eq("user_id", data.user_id);
     await supabase.rpc("log_admin_action", { _action: "revoke_subscription", _entity_type: "subscription", _entity_id: data.user_id, _metadata: {} });
     return { ok: true };
   });
