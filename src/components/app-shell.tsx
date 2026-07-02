@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Compass, LayoutDashboard, FileCheck2, Target, Brain, Sparkles,
-  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2, Globe,
+  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -29,7 +29,7 @@ const recruiterNav = [
 ] as const;
 
 const adminNav = [
-  { to: "/admin/scraping", label: "Job Sources", icon: Globe },
+  { to: "/admin", label: "Admin console", icon: Shield },
 ] as const;
 
 export function AppShell({ children }: { children?: ReactNode }) {
