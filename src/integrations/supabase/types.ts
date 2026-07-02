@@ -461,6 +461,7 @@ export type Database = {
         Row: {
           base_url: string
           created_at: string
+          description: string | null
           enabled: boolean
           id: string
           last_error: string | null
@@ -468,11 +469,13 @@ export type Database = {
           last_status: string | null
           name: string
           region: string | null
+          schedule_cron: string | null
           updated_at: string
         }
         Insert: {
           base_url: string
           created_at?: string
+          description?: string | null
           enabled?: boolean
           id?: string
           last_error?: string | null
@@ -480,11 +483,13 @@ export type Database = {
           last_status?: string | null
           name: string
           region?: string | null
+          schedule_cron?: string | null
           updated_at?: string
         }
         Update: {
           base_url?: string
           created_at?: string
+          description?: string | null
           enabled?: boolean
           id?: string
           last_error?: string | null
@@ -492,6 +497,7 @@ export type Database = {
           last_status?: string | null
           name?: string
           region?: string | null
+          schedule_cron?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -785,6 +791,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _entity_id: string
+          _entity_type: string
+          _metadata?: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {

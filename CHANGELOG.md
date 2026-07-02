@@ -2,6 +2,23 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 05 — Full admin CRUD, audit log, 12h auto-scrape
+
+- Scraper fix: replaced partial unique index with a real `UNIQUE (source, external_id)` constraint so upserts stop erroring on `ON CONFLICT`.
+- Automation: `pg_cron` job runs `POST /api/public/hooks/scrape-jobs` every 12 hours (00:00 & 12:00 UTC) using the Supabase publishable key.
+- Admin server API (`src/lib/admin.functions.ts`, admin-only): user search + role grant/revoke, job list/edit/delete (title, status, cap), blog CRUD (`body_md`, `cover_image_url`, publish flag), subscription grant/revoke (`tier` + `current_period_end`), audit log reader, scrape schedule inspector.
+- Scrape server API additions: `updateJobSource`, `deleteJobSource` (admin-only).
+- Audit trail: every admin write is recorded via `log_admin_action` into `audit_log` (actor, action, entity, metadata) and surfaced in `/admin/audit`.
+- Admin UI (all under `/admin`, sidebar tile "Admin console" gated on `admin` role):
+  - `/admin` hub tiles for every management area.
+  - `/admin/users` — search users, add / remove any role (student, recruiter, company_admin, cms_editor, admin).
+  - `/admin/jobs` — inline edit title / status / cap, delete any job (scraped or native).
+  - `/admin/scraping` — inline edit name / URL / region, delete source, per-source scrape, "Run all now", 12h schedule notice.
+  - `/admin/blog` — create / publish / delete Markdown posts with cover URL and excerpt.
+  - `/admin/subscriptions` — grant Pro/Team for N months or revoke back to free.
+  - `/admin/audit` — chronological admin action feed with metadata.
+- Fix: recruiter decision notifications now insert `type` (schema column), unblocking the shortlist / proceed / regret flow that Run 03 introduced.
+
 ## Run 04 — Job scraping (Kenya + international)
 
 - Fix: `ai_run_usage` RLS now allows self-inserts (`auth.uid() = user_id`), unblocking every AI module (Employability, Skill Gap, Resume/ATS, Recommendations, Cover Letters, Interview Kit).
