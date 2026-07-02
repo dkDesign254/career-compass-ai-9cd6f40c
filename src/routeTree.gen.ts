@@ -24,6 +24,7 @@ import { Route as AuthenticatedEmployabilityRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedApplicationsRouteImport } from './routes/_authenticated/applications'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedRecruiterNewJobRouteImport } from './routes/_authenticated/recruiter.new-job'
 import { Route as AuthenticatedAdminScrapingRouteImport } from './routes/_authenticated/admin.scraping'
 import { Route as ApiPublicHooksScrapeJobsRouteImport } from './routes/api/public/hooks/scrape-jobs'
@@ -106,6 +107,11 @@ const AuthenticatedApplicationsRoute =
     path: '/applications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRecruiterNewJobRoute =
   AuthenticatedRecruiterNewJobRouteImport.update({
     id: '/new-job',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/skill-gap': typeof AuthenticatedSkillGapRoute
   '/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
   '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/skill-gap': typeof AuthenticatedSkillGapRoute
   '/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
   '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/_authenticated/skill-gap': typeof AuthenticatedSkillGapRoute
   '/_authenticated/admin/scraping': typeof AuthenticatedAdminScrapingRoute
   '/_authenticated/recruiter/new-job': typeof AuthenticatedRecruiterNewJobRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/recruiter/applicants/$jobId': typeof AuthenticatedRecruiterApplicantsJobIdRoute
   '/api/public/hooks/scrape-jobs': typeof ApiPublicHooksScrapeJobsRoute
 }
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/skill-gap'
     | '/admin/scraping'
     | '/recruiter/new-job'
+    | '/admin/'
     | '/recruiter/applicants/$jobId'
     | '/api/public/hooks/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/skill-gap'
     | '/admin/scraping'
     | '/recruiter/new-job'
+    | '/admin'
     | '/recruiter/applicants/$jobId'
     | '/api/public/hooks/scrape-jobs'
   id:
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/_authenticated/skill-gap'
     | '/_authenticated/admin/scraping'
     | '/_authenticated/recruiter/new-job'
+    | '/_authenticated/admin/'
     | '/_authenticated/recruiter/applicants/$jobId'
     | '/api/public/hooks/scrape-jobs'
   fileRoutesById: FileRoutesById
@@ -372,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApplicationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recruiter/new-job': {
       id: '/_authenticated/recruiter/new-job'
       path: '/new-job'
@@ -433,6 +452,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
   AuthenticatedSkillGapRoute: typeof AuthenticatedSkillGapRoute
   AuthenticatedAdminScrapingRoute: typeof AuthenticatedAdminScrapingRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -448,6 +468,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResumeRoute: AuthenticatedResumeRoute,
   AuthenticatedSkillGapRoute: AuthenticatedSkillGapRoute,
   AuthenticatedAdminScrapingRoute: AuthenticatedAdminScrapingRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
