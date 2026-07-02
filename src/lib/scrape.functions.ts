@@ -62,6 +62,40 @@ export const addJobSource = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateJobSource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      name: z.string().min(2).optional(),
+      base_url: z.string().url().optional(),
+      region: z.string().nullable().optional(),
+      description: z.string().nullable().optional(),
+      enabled: z.boolean().optional(),
+    }).parse(i),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { id, ...patch } = data;
+    const { error } = await supabase.from("job_sources").update(patch).eq("id", id);
+    if (error) throw new Error(error.message);
+    await supabase.rpc("log_admin_action", { _action: "update", _entity_type: "job_source", _entity_id: id, _metadata: patch });
+    return { ok: true };
+  });
+
+export const deleteJobSource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { error } = await supabase.from("job_sources").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await supabase.rpc("log_admin_action", { _action: "delete", _entity_type: "job_source", _entity_id: data.id, _metadata: {} });
+    return { ok: true };
+  });
+
 // Admin-triggered scrape. Iterates enabled sources, extracts jobs via Firecrawl,
 // upserts by (source, external_id).
 export const runJobScrape = createServerFn({ method: "POST" })
