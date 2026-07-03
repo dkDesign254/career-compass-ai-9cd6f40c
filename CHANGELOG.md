@@ -2,6 +2,16 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 06 — Design reset: editorial landing (Handshake × LinkedIn)
+
+- Baseline audit captured in `docs/AUDIT.md` — snapshot of every table, server fn, route and design token shipped through Run 05, plus the seven gaps queued for Runs 07–11.
+- New palette: ivory `#FBFAF7` canvas, ink foreground, LinkedIn blue `#0A66C2` primary, Handshake orange `#F26B3A` accent, sage secondary; matching dark mode. `--radius` tightened to `0.625rem`.
+- Typography: display face swapped from Space Grotesk to **Fraunces** (serif, 400/500/600); Inter retained for body.
+- Landing page (`/`) rewritten from scratch — removed gradient hero, blur orbs, `bg-grid`, motion-heavy feature cards and the gradient CTA panel. New structure: minimal nav, editorial serif hero with photographic image, live jobs strip, three-pillar section, journey teaser, closing CTA.
+- `src/lib/public-jobs.functions.ts` — new read-only public server fn returning the six most recent open jobs via `supabaseAdmin` (no RLS relaxation needed). Consumed on the landing page with React Query.
+- `src/assets/hero-landing.jpg` — editorial photograph asset for the hero.
+- Explicitly deferred (in this order, as agreed): Run 07 social-feed dashboard + journey walkthrough · Run 08 on-platform job rendering with compatibility scores and "people to contact" · Run 09 scraper expansion + seed data · Run 10 LinkedIn/GitHub OAuth + profile-URL imports · Run 11 API-key manager + CMS-of-strings.
+
 ## Run 05 — Full admin CRUD, audit log, 12h auto-scrape
 
 - Scraper fix: replaced partial unique index with a real `UNIQUE (source, external_id)` constraint so upserts stop erroring on `ON CONFLICT`.
