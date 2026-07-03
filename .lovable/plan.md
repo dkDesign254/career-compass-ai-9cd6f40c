@@ -1,53 +1,88 @@
+# CareerPilot — Rebuild plan (Runs 6–11)
 
-# CareerPilot AI — Build Plan
+Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independently reviewable. No run starts until prior run's doc + changelog are written.
 
-Fresh build on Lovable's TanStack Start stack with Lovable Cloud (Postgres + Auth + Storage) and Lovable AI Gateway (Gemini). Everything you selected is in scope; it will ship across sequenced runs so each run is testable and documented.
+## Ground rules (apply to every run)
+- One repo only: `dkDesign254/AI-Career-Navigator` (GitHub sync — user must connect via UI).
+- Zero hardcoded content on user-facing pages. Everything reads from DB. Seed via migrations, not JSX.
+- All admin surfaces = full CRUD, audit-logged.
+- No LinkedIn/Indeed/Glassdoor scraping (ToS). Scrape-friendly sources only.
+- Every color/font is a semantic token. No `text-white`/`bg-[#...]` in components.
+- Journey metaphor = onboarding + replayable `/tour`, NOT primary nav.
 
-## Before Run 1
+---
 
-1. You connect this Lovable project to `dkDesign254/AI-Career-Navigator` via the top-right GitHub button (I can't trigger this).
-2. I create `CHANGELOG.md` (summary) + `docs/runs/RUN-XX.md` (detail) on every run.
+## Run 6 — Audit + Design reset
+**Goal:** honest baseline + new visual identity before any feature work.
 
-## Roles
-`student` (job seeker), `recruiter`, `company_admin`, `admin`, `cms_editor` — stored in a separate `user_roles` table with a security-definer `has_role()` function. Recruiter/admin/CMS routes gated by role checks.
+1. **Audit doc** `docs/AUDIT.md`: every route, every table, every server fn, every gap vs. this plan. Marks what stays / rewrites / deletes.
+2. **New palette + typography** (Handshake × LinkedIn blend):
+   - Ivory `#FBFAF7` bg, ink `#0A0A0A` text, LinkedIn blue `#0A66C2` primary, Handshake orange `#F26B3A` accent, muted sage `#E8EFEA` surface.
+   - Serif display: **Söhne Breit / Fraunces** (headlines) + **Inter** (body). Install via `@fontsource`.
+   - Rewrite `src/styles.css` tokens (oklch).
+3. **New landing page** (`/`): editorial hero, live jobs strip (pulled from DB), 3 value props with real Fuzu-style illustrations (I'll generate), testimonial slot (seeded), footer.
+4. **Kill AI-slop imagery**: replace generic gradients with commissioned-style generated hero art.
+5. Doc: `docs/runs/RUN-06.md` + `CHANGELOG.md` entry.
 
-## Run sequence
+**Ships:** new landing, new tokens, audit doc. Nothing else touched.
 
-### Run 1 — Foundation (this run after approval)
-- Enable Lovable Cloud
-- Design system: dark/light theme tokens, typography, branded palette (no generic purple gradient)
-- Auth: email/password + Google, `/auth`, `/reset-password`
-- DB schema + RLS for: `profiles`, `user_roles`, `career_profiles`, `resumes`, `jobs`, `applications`, `generated_documents`, `interview_sessions`, `subscriptions`, `ai_run_usage`, `feedback_threads`, `notifications`, `blog_posts`, `audit_log`
-- App shell: sidebar nav, top bar, theme toggle, onboarding wizard skeleton, empty dashboard
-- Help/tour system scaffold (driver.js-style) + 404 page with animation
-- `CHANGELOG.md` + `docs/runs/RUN-01.md`
+---
 
-### Run 2 — Core 5 modules (student side)
-Onboarding wizard (full), employability score, skill gap analysis, resume ATS optimizer (PDF/DOCX upload + parse), career recommendations, cover letter & interview prep — all wired to Lovable AI Gateway. Job tracker (manual). Quota: 2 free AI compatibility runs/month.
+## Run 7 — Feed dashboard + Journey onboarding
+1. `/dashboard` becomes a **feed**: job matches, application updates, skill tips, recommendations — chronological, LinkedIn-feed shape.
+2. **First-run journey** (`/tour` + auto-trigger post-signup): 7 scenes (house → cab → toll → airport → terminal → gate → cockpit), each scene = one platform concept. Framer-motion scene transitions, clickable hotspots. Replayable from Help menu.
+3. **Help center** (`/help`): searchable, DB-backed articles (new `help_articles` table).
+4. Doc + changelog.
 
-### Run 3 — Recruiter portal + feedback loop
-Recruiter dashboard, job posting (with 30-application cap on free tier), applicant pipeline, ATS shortlist, one-click personalized regret/proceed with applicant reply thread + in-app + email notifications.
+---
 
-### Run 4 — Job board + scraping
-Public job board with filters (remote/hybrid/onsite, contract/PT/FT, location, USAID-partner flag). Scraping via Firecrawl connector (LinkedIn/Indeed/company sites where ToS permits) on a scheduled server route. Kenya-first + remote-international.
+## Run 8 — Jobs on-platform
+1. Extend scraper to capture **full description, salary, requirements** — store on `jobs`.
+2. New route `/jobs/$jobId`: on-platform detail page (no outbound redirect as primary CTA; external link kept as secondary "view original").
+3. **Per-job scores** (server-computed): compatibility, best-fit, alert-match, preference-match. Uses existing career_profile + AI gateway.
+4. **Apply on platform** flow: uses stored resume, writes `applications` row.
+5. **"People to contact"** stub: list of company contacts from `companies` table (seeded, editable in admin).
+6. Doc + changelog.
 
-### Run 5 — Subscriptions + admin/CMS
-Stripe via Lovable's built-in payments. Tiers: Free / Pro (more AI runs, unlimited applications) / Recruiter Pro (>30 apps). Separate `/admin` portal with charts (Recharts), tables, user/job/subscription management, audit log, GA4 hook, blog CMS (cms_editor role), GDPR pages (Privacy, Terms, Cookies, DPA).
+---
 
-### Run 6 — Polish
-PostHog session recording/heatmaps, in-app onboarding tour, notification center, performance pass, SEO meta on all public routes, security scan.
+## Run 9 — Scraper expansion + seeding
+1. Curated source list (all confirmed answers): BrighterMonday, Fuzu, MyJobMag, Corporate Staffing, RemoteOK, WeWorkRemotely, Remotive, Upwork public, Freelancer public, + 10 KE company ATS pages (Safaricom, Equity, KCB, etc.).
+2. Per-source **selector overrides** in `job_sources` for pages Firecrawl struggles with.
+3. **Seed migration**: 50 realistic scraped jobs + 20 demo users with resumes/ATS runs/scores for admin review.
+4. Admin UI: "Add source" wizard with URL test-run preview.
+5. Doc + changelog.
+
+---
+
+## Run 10 — Integrations (realistic)
+1. **LinkedIn OAuth** (basic profile) + **GitHub OAuth** — via Lovable Cloud managed social + Supabase provider config.
+2. **Profile-URL import**: user pastes LinkedIn/Fuzu/Upwork/Freelancer/Handshake URL → Firecrawl scrape → parse via AI gateway → prefill `career_profiles`.
+3. **GitHub repo import**: auto-populate projects section.
+4. Social share out: LinkedIn post via user's OAuth token (basic w_member_social if scope granted; else copy-to-clipboard fallback).
+5. Doc + changelog.
+
+---
+
+## Run 11 — Admin polish + gap close
+1. **API key manager** UI (`/admin/api-keys`): add/rotate/delete Firecrawl, Lovable AI, provider keys via secrets tools. Super-admin only.
+2. **Content editor**: every landing-page string, hero image, testimonial, help article — editable via admin CMS. Zero hardcoded copy remains.
+3. **Full audit sweep**: any front-end field not editable server-side gets an admin form.
+4. **SEO pass**: unique title/description per route, sitemap, JSON-LD.
+5. Doc + changelog.
+
+---
 
 ## Technical notes
+- Palette tokens (oklch) written to `src/styles.css` `:root` + `.dark`. Sidebar, cards, chart colors all re-derived.
+- Fonts via `@fontsource/fraunces` + `@fontsource/inter` imported in `src/main.tsx` or root route (check current wiring first).
+- Journey scenes: 7 generated illustrations (fast tier, ~1024×640 jpg) stored in `src/assets/journey/`.
+- Job detail scoring: single server fn `scoreJobForUser(jobId, userId)` cached 24h in a `job_scores` table.
+- LinkedIn OAuth: `supabase--configure_social_auth` with `["google","linkedin_oidc"]`; GitHub via same tool if supported, else Supabase provider config.
+- URL-import parsers: one `parseProfileFromUrl(url)` server fn → Firecrawl scrape → Gemini structure → returns `Partial<CareerProfile>`.
+- Seed data lives in `supabase/migrations/*_seed_demo.sql` — not in code.
 
-- Stack: TanStack Start v1, React 19, Tailwind v4, shadcn/ui, Lovable Cloud (Supabase under the hood), Lovable AI Gateway (`google/gemini-3-flash-preview`).
-- Server boundary: `createServerFn` for app-internal; server routes under `src/routes/api/` for webhooks/scraping cron/Stripe.
-- File uploads: Lovable Cloud Storage with signed URLs.
-- Resume parsing: `pdfjs-dist` + `mammoth` (DOCX) inside server fns.
-- Roles enforced via `has_role()` security-definer function + RLS.
-- Quota enforcement: server-side check against `ai_run_usage` before each AI call.
-- Docs: `CHANGELOG.md` updated each run + `docs/runs/RUN-XX.md` with what changed, schema diffs, env vars added, manual test checklist.
+## What I need from you to start Run 6
+Just: **"go"**. Palette, sources, integrations, landing shape are all locked from your answers above.
 
-## What I need from you to start Run 1
-1. Confirm GitHub repo is connected (or say "skip GitHub for now").
-2. Brand direction: any color/font/feel preferences, or pick one I propose?
-3. Approve this plan → I'll execute Run 1.
+GitHub sync: connect via chat + menu → GitHub → Connect (only you can do this). I'll keep pushing to the same repo automatically once connected.
