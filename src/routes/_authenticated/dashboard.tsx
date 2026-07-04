@@ -69,7 +69,7 @@ function Dashboard() {
               <div className="space-y-3">
                 {jobs.slice(0, 8).map((j: any, i: number) => (
                   <motion.div key={j.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                    <Link to="/jobs">
+                    <Link to="/jobs/$jobId" params={{ jobId: j.id }}>
                       <Card className="transition-all hover:border-primary/40 hover:shadow-sm">
                         <CardContent className="flex items-start gap-3 p-4">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
