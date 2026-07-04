@@ -26,7 +26,7 @@ export const getDashboardFeed = createServerFn({ method: "GET" })
         .limit(6),
       supabase
         .from("career_profiles")
-        .select("target_roles, target_industries, top_skills, experience_years")
+        .select("target_role, industry, skills, experience_level")
         .eq("user_id", userId)
         .maybeSingle(),
     ]);
