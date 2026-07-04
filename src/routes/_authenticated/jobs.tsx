@@ -81,7 +81,11 @@ function JobsPage() {
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <CardTitle className="text-base">{j.title}</CardTitle>
+                      <CardTitle className="text-base">
+                        <Link to="/jobs/$jobId" params={{ jobId: j.id }} className="hover:text-primary hover:underline">
+                          {j.title}
+                        </Link>
+                      </CardTitle>
                       <p className="text-xs text-muted-foreground">
                         {j.companies?.name ?? j.source ?? "—"} · <MapPin className="inline h-3 w-3" /> {j.location ?? "—"}
                       </p>
