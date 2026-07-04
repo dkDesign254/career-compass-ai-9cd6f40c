@@ -1,89 +1,169 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Target, Brain, FileCheck2, Sparkles, Briefcase, ArrowRight, Zap } from "lucide-react";
+import { Briefcase, MapPin, Sparkles, Bell, FileText, Compass, ArrowRight, Building2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { formatDistanceToNow } from "date-fns";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getQuotaStatus } from "@/lib/ai.functions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getDashboardFeed } from "@/lib/feed.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — CareerPilot AI" }] }),
+  head: () => ({ meta: [{ title: "Your feed — CareerPilot" }] }),
   component: Dashboard,
 });
 
-const modules = [
-  { to: "/employability", title: "Employability Score", desc: "See your readiness across skills, experience, and education.", icon: Target },
-  { to: "/skill-gap", title: "Skill Gap Analysis", desc: "Identify exactly what to learn for your target role.", icon: Brain },
-  { to: "/resume", title: "Resume / ATS", desc: "Upload your resume and optimize it for ATS systems.", icon: FileCheck2 },
-  { to: "/recommendations", title: "Career Recommendations", desc: "AI-tailored career paths, cover letters, interview prep.", icon: Sparkles },
-  { to: "/jobs", title: "Jobs & Applications", desc: "Browse jobs and track your applications.", icon: Briefcase },
-] as const;
+function timeAgo(iso: string) {
+  try { return formatDistanceToNow(new Date(iso), { addSuffix: true }); } catch { return ""; }
+}
 
 function Dashboard() {
-  const fn = useServerFn(getQuotaStatus);
-  const { data: quota } = useQuery({ queryKey: ["ai-quota"], queryFn: () => fn(), staleTime: 30_000 });
+  const fn = useServerFn(getDashboardFeed);
+  const { data, isLoading } = useQuery({ queryKey: ["dashboard-feed"], queryFn: () => fn(), staleTime: 30_000 });
+  const jobs = data?.jobs ?? [];
+  const apps = data?.applications ?? [];
+  const notes = data?.notifications ?? [];
+  const profile = data?.profile;
+  const targetRole = profile?.target_role;
+
   return (
     <AppShell>
-      <div className="mx-auto max-w-6xl space-y-8">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold tracking-tight">Welcome aboard</h1>
-          <p className="mt-1 text-muted-foreground">Complete your profile to unlock personalized recommendations.</p>
-        </motion.div>
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_320px]">
+        {/* Main feed */}
+        <div className="space-y-6">
+          <motion.header initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="text-sm text-muted-foreground">Your feed</p>
+            <h1 className="font-display text-3xl font-semibold tracking-tight">
+              {targetRole ? `New for ${targetRole}` : "Welcome back"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Fresh roles, updates on your applications, and things worth your attention.
+            </p>
+          </motion.header>
 
-        <Card className="border-coral/40 bg-gradient-to-br from-brand to-brand/80 text-white">
-          <CardContent className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-coral/30 px-3 py-1 text-xs font-medium">
-                <Zap className="h-3 w-3" /> Get started
-              </div>
-              <h2 className="text-xl font-semibold">Set up your career profile</h2>
-              <p className="mt-1 text-sm text-white/80">Takes about 3 minutes. All modules unlock from here.</p>
-            </div>
-            <Button asChild className="bg-coral hover:bg-coral/90">
-              <Link to="/onboarding">Start onboarding <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { label: "Employability score", value: "—" },
-            { label: "Applications", value: "0" },
-          { label: "AI runs this month", value: quota ? (quota.isPaid ? `${quota.used}` : `${quota.used} / ${quota.limit}`) : "—" },
-          ].map((s) => (
-            <Card key={s.label}>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{s.label}</CardTitle></CardHeader>
-              <CardContent><div className="text-3xl font-bold">{s.value}</div></CardContent>
+          {!profile && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div className="flex items-center gap-3">
+                  <Compass className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Finish setting up your profile</p>
+                    <p className="text-sm text-muted-foreground">Takes ~3 minutes. Unlocks matching and scoring.</p>
+                  </div>
+                </div>
+                <Button asChild size="sm"><Link to="/onboarding">Continue <ArrowRight className="ml-1 h-3 w-3" /></Link></Button>
+              </CardContent>
             </Card>
-          ))}
+          )}
+
+          {isLoading && <p className="text-sm text-muted-foreground">Loading feed…</p>}
+
+          {jobs.length > 0 && (
+            <section>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold">Fresh roles</h2>
+                <Link to="/jobs" className="text-sm text-primary hover:underline">Browse all →</Link>
+              </div>
+              <div className="space-y-3">
+                {jobs.slice(0, 8).map((j: any, i: number) => (
+                  <motion.div key={j.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                    <Link to="/jobs">
+                      <Card className="transition-all hover:border-primary/40 hover:shadow-sm">
+                        <CardContent className="flex items-start gap-3 p-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
+                            {j.companies?.logo_url ? (
+                              <img src={j.companies.logo_url} alt="" className="h-10 w-10 rounded-md object-cover" />
+                            ) : (
+                              <Building2 className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">{j.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {j.companies?.name ?? j.source ?? "Company"} · {timeAgo(j.created_at)}
+                            </p>
+                            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                              {j.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{j.location}</span>}
+                              {j.work_mode && <Badge variant="outline" className="capitalize">{j.work_mode}</Badge>}
+                              {j.employment_type && <Badge variant="outline" className="capitalize">{String(j.employment_type).replace(/_/g, " ")}</Badge>}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {jobs.length === 0 && !isLoading && (
+            <Card>
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                No open roles yet. Job sources refresh every 12 hours.
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">Modules</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {modules.map((m, i) => (
-              <motion.div key={m.to} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Link to={m.to}>
-                  <Card className="group h-full transition-all hover:-translate-y-1 hover:border-coral/50 hover:shadow-lg">
-                    <CardHeader>
-                      <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand/10 to-coral/20 text-coral group-hover:scale-110 transition-transform">
-                        <m.icon className="h-5 w-5" />
-                      </div>
-                      <CardTitle>{m.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent><p className="text-sm text-muted-foreground">{m.desc}</p></CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+        {/* Right rail */}
+        <aside className="space-y-6">
+          <Card>
+            <CardContent className="space-y-3 p-4">
+              <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="h-4 w-4 text-primary" /> First time here?</div>
+              <p className="text-sm text-muted-foreground">Take a 60-second tour of how CareerPilot works.</p>
+              <Button asChild size="sm" variant="outline" className="w-full"><Link to="/tour">Start the tour</Link></Button>
+            </CardContent>
+          </Card>
+
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium"><Briefcase className="h-4 w-4" /> Your applications</div>
+            {apps.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nothing yet. Apply to a role and it lands here.</p>
+            ) : (
+              <ul className="space-y-2">
+                {apps.map((a: any) => (
+                  <li key={a.id} className="rounded-md border p-3 text-sm">
+                    <p className="truncate font-medium">{a.jobs?.title ?? "Role"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.jobs?.companies?.name ?? ""} · <span className="capitalize">{a.status}</span> · {timeAgo(a.created_at)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link to="/applications" className="mt-2 inline-block text-xs text-primary hover:underline">Manage applications →</Link>
           </div>
-        </div>
 
-        <p className="text-center text-xs text-muted-foreground">
-          AI modules are live. Job board, recruiter portal and subscriptions arrive in Runs 3–5.
-        </p>
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium"><Bell className="h-4 w-4" /> Notifications</div>
+            {notes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">You're all caught up.</p>
+            ) : (
+              <ul className="space-y-2">
+                {notes.map((n: any) => (
+                  <li key={n.id} className={`rounded-md border p-3 text-sm ${n.read_at ? "opacity-70" : ""}`}>
+                    <p className="font-medium">{n.title}</p>
+                    {n.body && <p className="text-xs text-muted-foreground">{n.body}</p>}
+                    <p className="mt-1 text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="rounded-md border p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium"><FileText className="h-4 w-4" /> Quick actions</div>
+            <ul className="space-y-1 text-sm">
+              <li><Link to="/resume" className="text-primary hover:underline">Analyze my resume</Link></li>
+              <li><Link to="/skill-gap" className="text-primary hover:underline">Run a skill-gap analysis</Link></li>
+              <li><Link to="/recommendations" className="text-primary hover:underline">Get career recommendations</Link></li>
+              <li><Link to="/employability" className="text-primary hover:underline">Check employability score</Link></li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </AppShell>
   );
