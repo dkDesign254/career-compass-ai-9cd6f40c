@@ -2,6 +2,13 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 09 — Scraper expansion + admin URL preview
+
+- Disabled `LinkedIn Jobs` source (LinkedIn blocks scrapers); the previous red error on `/admin/scraping` is gone.
+- Added curated sources: Remotive, Remote Rocketship, Wellfound, Remote Woman, AI Job Board, FlexJobs, JS Remotely, Toptal, Corporate Staffing Kenya, Safaricom Careers.
+- New admin server fn `testScrapeUrl` and a **Preview URL** button in the "Add source" card — runs Firecrawl on any URL and shows the first 10 extracted jobs (or the error) without writing to the DB.
+- Seeded 24 realistic demo jobs across the new sources for review.
+
 ## Run 06 — Design reset: editorial landing (Handshake × LinkedIn)
 
 - Baseline audit captured in `docs/AUDIT.md` — snapshot of every table, server fn, route and design token shipped through Run 05, plus the seven gaps queued for Runs 07–11.
