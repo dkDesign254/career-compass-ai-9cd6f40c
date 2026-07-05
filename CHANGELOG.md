@@ -2,6 +2,14 @@
 
 All notable changes documented per run. See `docs/runs/` for detailed per-run notes.
 
+## Run 10 — Profile-URL import
+
+- New `/profile` card: paste a URL (GitHub, portfolio, Fuzu, Wellfound, personal site) → preview a parsed career profile → merge or replace fields on your record.
+- **GitHub imports** use the public GitHub API (no scraping, no AI): pulls bio, location, languages as skills, and top 10 non-fork repos as projects.
+- **Portfolio / generic URLs** use Firecrawl + Gemini 2.5 Flash to structure role, industry, skills, work history, education, certifications, and goals.
+- **LinkedIn URLs** are rejected honestly (LinkedIn blocks scrapers) with a hint to use a GitHub or portfolio URL instead.
+- Replaces the plan's "LinkedIn + GitHub OAuth" bullet: Lovable Cloud managed OAuth only supports Google/Apple, so we ship the profile-import equivalent instead of an OAuth flow that can't exist.
+
 ## Run 09 — Scraper expansion + admin URL preview
 
 - Disabled `LinkedIn Jobs` source (LinkedIn blocks scrapers); the previous red error on `/admin/scraping` is gone.
