@@ -153,3 +153,19 @@ export const runJobScrape = createServerFn({ method: "POST" })
     }
     return { results };
   });
+
+// Admin dry-run: scrape a URL and return the first ~10 jobs without touching the DB.
+// Powers the "Preview" wizard in /admin/scraping.
+export const testScrapeUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ url: z.string().url() }).parse(i))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { scrapeJobsFromUrl } = await import("./scrape.server");
+    try {
+      const jobs = await scrapeJobsFromUrl(data.url);
+      return { ok: true as const, count: jobs.length, preview: jobs.slice(0, 10) };
+    } catch (e: any) {
+      return { ok: false as const, error: (e?.message ?? String(e)).slice(0, 500), preview: [] };
+    }
+  });
