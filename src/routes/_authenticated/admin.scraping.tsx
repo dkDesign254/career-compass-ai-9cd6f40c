@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Globe, PlayCircle, Plus, RefreshCw, Trash2, Save, Clock } from "lucide-react";
+import { Globe, PlayCircle, Plus, RefreshCw, Trash2, Save, Clock, Eye } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-  addJobSource, deleteJobSource, listJobSources, runJobScrape, toggleJobSource, updateJobSource,
+  addJobSource, deleteJobSource, listJobSources, runJobScrape, toggleJobSource, updateJobSource, testScrapeUrl,
 } from "@/lib/scrape.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/scraping")({
@@ -26,9 +26,11 @@ function ScrapingPage() {
   const addFn = useServerFn(addJobSource);
   const updFn = useServerFn(updateJobSource);
   const delFn = useServerFn(deleteJobSource);
+  const testFn = useServerFn(testScrapeUrl);
   const qc = useQueryClient();
   const { data: sources, isLoading } = useQuery({ queryKey: ["job-sources"], queryFn: () => listFn() });
   const [form, setForm] = useState({ name: "", base_url: "", region: "" });
+  const [preview, setPreview] = useState<{ url: string; count: number; jobs: any[]; error?: string } | null>(null);
   const [edits, setEdits] = useState<Record<string, { name: string; base_url: string; region: string }>>({});
 
   const run = useMutation({
@@ -60,6 +62,19 @@ function ScrapingPage() {
     onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["job-sources"] }); },
     onError: (e: any) => toast.error(e.message),
   });
+  const test = useMutation({
+    mutationFn: (url: string) => testFn({ data: { url } }),
+    onSuccess: (r: any, url: string) => {
+      if (r.ok) {
+        setPreview({ url, count: r.count, jobs: r.preview });
+        toast.success(`Found ${r.count} job${r.count === 1 ? "" : "s"}`);
+      } else {
+        setPreview({ url, count: 0, jobs: [], error: r.error });
+        toast.error("Preview failed — see details below");
+      }
+    },
+    onError: (e: any) => toast.error(e.message ?? "Preview failed"),
+  });
 
   return (
     <AppShell>
@@ -88,8 +103,45 @@ function ScrapingPage() {
             <Input placeholder="https://…/jobs" value={form.base_url} onChange={(e) => setForm({ ...form, base_url: e.target.value })} className="sm:col-span-2" />
             <div className="flex gap-2">
               <Input placeholder="KE" value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} />
-              <Button onClick={() => add.mutate()} disabled={!form.name || !form.base_url || add.isPending}><Plus className="h-4 w-4" /></Button>
+              <Button onClick={() => add.mutate()} disabled={!form.name || !form.base_url || add.isPending} title="Add source"><Plus className="h-4 w-4" /></Button>
             </div>
+            <div className="sm:col-span-4 flex flex-wrap items-center gap-2 border-t pt-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => test.mutate(form.base_url)}
+                disabled={!form.base_url || test.isPending}
+              >
+                <Eye className="mr-1 h-3 w-3" />
+                {test.isPending ? "Testing…" : "Preview URL (dry-run)"}
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Runs Firecrawl on the URL and shows sample jobs without saving.
+              </span>
+            </div>
+            {preview && (
+              <div className="sm:col-span-4 rounded-md border bg-muted/30 p-3 text-xs">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="font-medium">Preview · {preview.url}</span>
+                  <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setPreview(null)}>Clear</button>
+                </div>
+                {preview.error ? (
+                  <p className="text-destructive">{preview.error}</p>
+                ) : preview.jobs.length === 0 ? (
+                  <p className="text-muted-foreground">No jobs extracted. Try a URL that lists open roles directly.</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {preview.jobs.map((j, i) => (
+                      <li key={i} className="flex flex-wrap gap-2">
+                        <span className="font-medium">{j.title}</span>
+                        {j.company && <span className="text-muted-foreground">· {j.company}</span>}
+                        {j.location && <span className="text-muted-foreground">· {j.location}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
