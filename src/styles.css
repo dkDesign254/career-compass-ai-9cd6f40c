@@ -61,46 +61,46 @@
 }
 
 :root {
-  /* Handshake × LinkedIn editorial palette.
-     Ivory canvas, ink text, LinkedIn blue for trust,
-     Handshake orange as the singular accent, sage as calm surface. */
+  /* Handshake-inspired palette, tuned warmer for African audiences.
+     Ivory canvas, deep ink text, Handshake orange as accent,
+     midnight navy as headings/brand, mint/sage surfaces. */
   --radius: 0.625rem;
-  --background: oklch(0.98 0.006 85);        /* #FBFAF7 ivory */
-  --foreground: oklch(0.16 0.005 60);        /* #0F0E0C ink */
+  --background: oklch(0.985 0.005 85);       /* ivory */
+  --foreground: oklch(0.17 0.02 250);        /* deep navy ink */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.005 60);
+  --card-foreground: oklch(0.17 0.02 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.005 60);
-  --primary: oklch(0.48 0.15 250);           /* LinkedIn blue #0A66C2 */
+  --popover-foreground: oklch(0.17 0.02 250);
+  --primary: oklch(0.22 0.06 258);           /* Handshake midnight #1A2A4A */
   --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.94 0.013 155);        /* sage surface */
-  --secondary-foreground: oklch(0.22 0.02 155);
-  --muted: oklch(0.955 0.007 85);
-  --muted-foreground: oklch(0.45 0.01 60);
-  --accent: oklch(0.7 0.17 42);              /* Handshake orange #F26B3A */
-  --accent-foreground: oklch(0.16 0.005 60);
+  --secondary: oklch(0.955 0.02 155);        /* mint surface */
+  --secondary-foreground: oklch(0.24 0.03 175);
+  --muted: oklch(0.96 0.006 85);
+  --muted-foreground: oklch(0.44 0.02 250);
+  --accent: oklch(0.72 0.18 42);             /* Handshake orange */
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.006 85);
-  --input: oklch(0.92 0.006 85);
-  --ring: oklch(0.7 0.17 42);
-  --brand: oklch(0.16 0.005 60);             /* ink is the brand voice */
-  --brand-foreground: oklch(0.98 0.006 85);
-  --coral: oklch(0.7 0.17 42);               /* alias → accent */
-  --teal: oklch(0.48 0.15 250);              /* alias → primary blue */
-  --chart-1: oklch(0.48 0.15 250);
-  --chart-2: oklch(0.7 0.17 42);
+  --border: oklch(0.9 0.008 85);
+  --input: oklch(0.92 0.008 85);
+  --ring: oklch(0.72 0.18 42);
+  --brand: oklch(0.22 0.06 258);             /* navy brand */
+  --brand-foreground: oklch(0.985 0.005 85);
+  --coral: oklch(0.72 0.18 42);              /* orange accent */
+  --teal: oklch(0.55 0.13 195);              /* teal highlight */
+  --chart-1: oklch(0.22 0.06 258);
+  --chart-2: oklch(0.72 0.18 42);
   --chart-3: oklch(0.6 0.13 165);
   --chart-4: oklch(0.72 0.14 85);
   --chart-5: oklch(0.55 0.14 305);
-  --sidebar: oklch(0.16 0.005 60);
-  --sidebar-foreground: oklch(0.96 0.006 85);
-  --sidebar-primary: oklch(0.7 0.17 42);
-  --sidebar-primary-foreground: oklch(0.14 0.005 60);
-  --sidebar-accent: oklch(0.22 0.005 60);
-  --sidebar-accent-foreground: oklch(0.96 0.006 85);
-  --sidebar-border: oklch(0.24 0.005 60);
-  --sidebar-ring: oklch(0.7 0.17 42);
+  --sidebar: oklch(1 0 0);                   /* light rail à la Handshake */
+  --sidebar-foreground: oklch(0.17 0.02 250);
+  --sidebar-primary: oklch(0.22 0.06 258);
+  --sidebar-primary-foreground: oklch(0.985 0.005 85);
+  --sidebar-accent: oklch(0.955 0.02 155);
+  --sidebar-accent-foreground: oklch(0.22 0.06 258);
+  --sidebar-border: oklch(0.9 0.008 85);
+  --sidebar-ring: oklch(0.72 0.18 42);
 }
 
 .dark {
@@ -177,4 +177,9 @@
     background-clip: text;
     color: transparent;
   }
+  .bg-mint { background-color: oklch(0.955 0.02 155); }
+  .bg-peach { background-color: oklch(0.94 0.04 55); }
+  .bg-sky { background-color: oklch(0.93 0.03 230); }
+  .bg-butter { background-color: oklch(0.95 0.05 95); }
+  .ring-soft { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12); }
 }
