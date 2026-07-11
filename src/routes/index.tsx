@@ -18,10 +18,10 @@ import t3 from "@/assets/testimonial-3.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CareerPilot — Where Africa's next generation launches their career" },
+      { title: "CareerPilot, where Africa's next generation launches their career" },
       { name: "description", content: "Discover thousands of jobs, internships, and employers. AI resume review, employability scoring, and personal matching built for students and graduates across Africa." },
-      { property: "og:title", content: "CareerPilot — Launch your career" },
-      { property: "og:description", content: "Thousands of live jobs and internships, AI resume review, and matched employers — free for students and grads." },
+      { property: "og:title", content: "CareerPilot, launch your career" },
+      { property: "og:description", content: "Thousands of live jobs and internships, AI resume review, and matched employers. Free for students and grads." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -54,7 +54,7 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Nav — Handshake style */}
+      {/* Nav, Handshake style */}
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
           <Link to="/" className="flex items-center gap-2 text-base font-semibold tracking-tight">
@@ -77,7 +77,7 @@ function Landing() {
         </div>
       </header>
 
-      {/* HERO — Handshake style, image right, search left */}
+      {/* HERO, Handshake style, image right, search left */}
       <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-secondary/60 via-background to-background">
         <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 md:grid-cols-[1.1fr_1fr] md:gap-16 md:py-24 lg:py-28">
           <div className="flex flex-col justify-center">
@@ -88,7 +88,7 @@ function Landing() {
               The career<br />network built for <span className="text-accent">you.</span>
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Thousands of jobs and internships across Africa and remote. AI resume review, employability scoring, and personal matching — one home for everything after graduation.
+              Thousands of jobs and internships across Africa and remote. AI resume review, employability scoring, and personal matching, all in one home for everything after graduation.
             </p>
 
             {/* Search bar (Handshake vibe) */}
@@ -153,14 +153,14 @@ function Landing() {
         </div>
       </section>
 
-      {/* CATEGORY GRID — Fuzu-density imagery */}
+      {/* CATEGORY GRID, Fuzu-density imagery */}
       <section id="categories" className="border-b border-border/60 py-20">
         <div className="mx-auto max-w-7xl px-5">
           <div className="mb-10 flex items-end justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">Explore</p>
               <h2 className="mt-2 font-display text-4xl font-semibold tracking-tight text-primary">Find your path.</h2>
-              <p className="mt-2 max-w-xl text-muted-foreground">Browse thousands of roles by field — from software to marketing, finance to design.</p>
+              <p className="mt-2 max-w-xl text-muted-foreground">Browse thousands of roles by field, from software to marketing, finance to design.</p>
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -180,7 +180,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* LIVE JOBS — dense grid */}
+      {/* LIVE JOBS, dense grid */}
       <section id="jobs" className="border-b border-border/60 py-20">
         <div className="mx-auto max-w-7xl px-5">
           <div className="mb-10 flex items-end justify-between gap-4">
@@ -221,13 +221,13 @@ function Landing() {
         </div>
       </section>
 
-      {/* PILLARS — split image + copy */}
+      {/* PILLARS, split image + copy */}
       <section id="pillars" className="border-b border-border/60 py-24">
         <div className="mx-auto max-w-7xl space-y-24 px-5">
           {[
-            { kicker: "Employability score", title: "Know exactly where you stand.", body: "A weekly AI read across your skills, experience, and evidence — with clear next steps to raise it. No vanity metrics, no guessing.", image: catTech, reverse: false },
+            { kicker: "Employability score", title: "Know exactly where you stand.", body: "A weekly AI read across your skills, experience, and evidence, with clear next steps to raise it. No vanity metrics, no guessing.", image: catTech, reverse: false },
             { kicker: "ATS resume review", title: "Get past the robots. Land the interview.", body: "Upload your resume in PDF or DOCX and get keyword-tuned rewrites in your voice. Built to pass the real ATS filters used by Safaricom, Andela, and 1,200+ employers.", image: catDesign, reverse: true },
-            { kicker: "Personal job matching", title: "Three great roles a day. Not three hundred.", body: "We match you to jobs by skill, location, and fit — then track every application in one pipeline. Shortlisted, interviewing, offered.", image: catMarketing, reverse: false },
+            { kicker: "Personal job matching", title: "Three great roles a day. Not three hundred.", body: "We match you to jobs by skill, location, and fit, then track every application in one pipeline. Shortlisted, interviewing, offered.", image: catMarketing, reverse: false },
           ].map((p) => (
             <div key={p.kicker} className={`grid gap-10 md:grid-cols-2 md:items-center md:gap-16 ${p.reverse ? "md:[&>figure]:order-2" : ""}`}>
               <figure className="overflow-hidden rounded-3xl border border-border/60 ring-soft">
@@ -269,7 +269,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* CLOSING CTA — bold */}
+      {/* CLOSING CTA, bold */}
       <section className="relative overflow-hidden py-24">
         <div className="absolute inset-0 bg-primary" />
         <div className="absolute inset-0 opacity-30" style={{ backgroundImage: `url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center", mixBlendMode: "overlay" }} />

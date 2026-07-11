@@ -69,10 +69,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CareerPilot AI — Your AI Career Navigator" },
+      { title: "CareerPilot AI, your AI career navigator" },
       { name: "description", content: "AI-powered career navigator: employability scoring, skill gap analysis, ATS resume optimization, and tailored job matching for students and graduates." },
       { name: "author", content: "CareerPilot AI" },
-      { property: "og:title", content: "CareerPilot AI — Your AI Career Navigator" },
+      { property: "og:title", content: "CareerPilot AI, your AI career navigator" },
       { property: "og:description", content: "AI-powered employability, ATS, and job matching for students and graduates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
