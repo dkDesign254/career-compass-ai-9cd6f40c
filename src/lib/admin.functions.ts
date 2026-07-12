@@ -222,3 +222,52 @@ export const getScrapeSchedule = createServerFn({ method: "GET" })
     const { data } = await supabaseAdmin.from("job_sources").select("name, enabled, last_scraped_at, last_status");
     return { schedule: "Every 12 hours (00:00 & 12:00 UTC)", sources: data ?? [] };
   });
+
+/* ---------------- AI provider keys ---------------- */
+// Raw key values are never returned to the client. Only provider, label,
+// a masked preview (last 4 chars), and status are exposed. The RPCs below
+// enforce the admin check server-side against Supabase Vault.
+export const listAiProviderKeys = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { data, error } = await supabase
+      .from("ai_provider_keys")
+      .select("provider, label, key_preview, is_active, updated_at")
+      .order("provider", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+const SetAiProviderKeySchema = z.object({
+  provider: z.string().min(2).max(60),
+  label: z.string().max(120).optional(),
+  key_value: z.string().min(6).max(4000),
+});
+
+export const setAiProviderKey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => SetAiProviderKeySchema.parse(i))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { error } = await supabase.rpc("set_ai_provider_key", {
+      _provider: data.provider,
+      _label: data.label ?? null,
+      _key_value: data.key_value,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deactivateAiProviderKey = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ provider: z.string().min(2).max(60) }).parse(i))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { error } = await supabase.rpc("deactivate_ai_provider_key", { _provider: data.provider });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

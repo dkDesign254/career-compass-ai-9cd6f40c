@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { Globe, Users, Briefcase, FileText, CreditCard, ScrollText } from "lucide-react";
+import { Globe, Users, Briefcase, FileText, CreditCard, ScrollText, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin — CareerPilot" }] }),
@@ -15,6 +15,7 @@ const tiles = [
   { to: "/admin/blog", label: "Blog / CMS", icon: FileText, hint: "Create & publish posts" },
   { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard, hint: "Grant Pro / revoke" },
   { to: "/admin/audit", label: "Audit log", icon: ScrollText, hint: "Every admin action" },
+  { to: "/admin/settings", label: "Settings", icon: KeyRound, hint: "Manage AI provider keys" },
 ] as const;
 
 function AdminHub() {
