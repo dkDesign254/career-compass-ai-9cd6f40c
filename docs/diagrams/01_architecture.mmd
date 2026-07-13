@@ -1,0 +1,46 @@
+flowchart TB
+    subgraph PL["Presentation Layer — React / TanStack Start"]
+        UI1[Student / Graduate Interface]
+        UI2[Employer / Recruiter Interface]
+        UI3[Admin & CMS Dashboard]
+    end
+
+    subgraph AL["Application Layer — TanStack Start Server Functions"]
+        AUTH[Authentication Service]
+        REC[Career Recommendation Engine]
+        RES[Resume Processing Module]
+        SCORE[Employability Scoring Module]
+        GAP[Skill-Gap Analysis Module]
+        OPP[Opportunity Matching Module]
+        COACH[AI Coaching Chat Module]
+    end
+
+    subgraph AIL["AI Services Layer"]
+        NLP[Resume Parser / NLP]
+        RULE[Rule-based Match Scorer]
+        LLM[LLM Provider — via Vault-managed keys]
+    end
+
+    subgraph DL["Database Layer — Supabase Postgres"]
+        DB[(Users · Profiles · Resumes\nJobs · Applications · Companies)]
+        VAULT[(Supabase Vault\nEncrypted Provider Keys)]
+    end
+
+    subgraph EL["External Services Layer"]
+        GAUTH[Email / OAuth Providers]
+        SCRAPE[Job Source Scrapers]
+    end
+
+    PL --> AL
+    AL --> AIL
+    AL --> DL
+    AIL --> VAULT
+    AL --> EL
+    AUTH --> DB
+    REC --> DB
+    RES --> NLP
+    SCORE --> RULE
+    GAP --> RULE
+    OPP --> DB
+    COACH --> LLM
+    SCRAPE --> DB

@@ -1,0 +1,13 @@
+flowchart TD
+    A[Resume Upload] --> B[Document Validation]
+    B --> C[Resume Parsing]
+    C --> D[Natural Language Processing]
+    D --> E[Skill Extraction]
+    D --> F[Experience Extraction]
+    D --> G[Keyword Identification]
+    E --> H[ATS Analysis]
+    F --> H
+    G --> H
+    H --> I[(Store Results in Database)]
+    I --> J[Send Results to Recommendation Engine]
+    J --> K[Generate Recommendations]

@@ -1,0 +1,71 @@
+classDiagram
+    class User {
+        +UUID id
+        +string email
+        +string fullName
+        +string userType
+        +register()
+        +login()
+        +updateProfile()
+    }
+    class CareerProfile {
+        +UUID id
+        +UUID userId
+        +string targetRole
+        +string[] skills
+        +json education
+        +json workHistory
+        +uploadResume()
+        +viewRecommendations()
+    }
+    class Resume {
+        +UUID id
+        +UUID userId
+        +string filePath
+        +json parsedData
+        +int atsScore
+        +parseResume()
+    }
+    class CareerRecommendation {
+        +UUID id
+        +UUID jobId
+        +int matchScore
+        +json matchAnalysis
+        +generateRecommendation()
+    }
+    class EmployabilityScore {
+        +UUID id
+        +UUID profileId
+        +int overallScore
+        +json reasonBullets
+        +calculateScore()
+    }
+    class Job {
+        +UUID id
+        +UUID companyId
+        +string title
+        +string source
+        +string status
+        +matchUser()
+    }
+    class Company {
+        +UUID id
+        +string name
+        +UUID ownerId
+        +bool verified
+    }
+    class Administrator {
+        +UUID id
+        +manageUsers()
+        +manageContent()
+        +generateReports()
+    }
+
+    User "1" --> "1" CareerProfile : owns
+    CareerProfile "1" --> "0..*" Resume : uploads
+    CareerProfile "1" --> "1" EmployabilityScore : has
+    CareerProfile "1" --> "0..*" CareerRecommendation : receives
+    Resume "1" --> "0..*" CareerRecommendation : informs
+    Job "1" --> "0..*" CareerRecommendation : generates
+    Company "1" --> "0..*" Job : posts
+    Administrator "1" --> "0..*" User : manages

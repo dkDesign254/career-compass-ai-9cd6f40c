@@ -1,0 +1,16 @@
+flowchart TD
+    Start([Start]) --> Auth[Register / Login]
+    Auth --> Profile[Create / Update Career Profile]
+    Profile --> Upload[Upload Resume]
+    Upload --> NLP[Resume Parsing & NLP Analysis]
+    NLP --> Extract[Extract Skills & Experience]
+    Extract --> Score[Generate Employability Score]
+    Score --> Gap[Perform Skill-Gap Analysis]
+    Gap --> Rec[Generate Personalized Career Recommendations]
+    Rec --> Learn[Generate Learning & Certification Recommendations]
+    Learn --> Jobs[Recommend Jobs & Internships]
+    Jobs --> Coach[AI Coaching & Continuous Guidance]
+    Coach --> Decision{Continue using app?}
+    Decision -->|Yes| Profile
+    Decision -->|No| Logout[Logout]
+    Logout --> End([End])

@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor U as Student / Graduate
+    participant Login as Registration / Login Interface
+    participant Auth as Authentication Service
+    participant DB as Database
+    participant Dash as User Dashboard
+    participant Resume as Resume Upload Module
+    participant NLP as NLP Processing Module
+    participant Rec as Recommendation Engine
+    participant Coach as AI Coach
+
+    U->>Login: Register / Login
+    Login->>Auth: Submit credentials
+    Auth->>DB: Verify / create user
+    DB-->>Auth: Session established
+    Auth-->>Dash: Redirect to dashboard
+    Dash-->>U: Show personalized feed
+
+    U->>Resume: Upload resume
+    Resume->>NLP: Parse & analyze
+    NLP->>Rec: Extracted skills & experience
+    Rec->>DB: Store match scores
+    Rec-->>Dash: Updated recommendations
+    Dash-->>U: Show jobs, score, skill gaps
+
+    U->>Coach: Ask career question
+    Coach->>Rec: Fetch profile context
+    Rec-->>Coach: Relevant data
+    Coach-->>U: Personalized guidance

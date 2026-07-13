@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor Admin as Administrator
+    participant Login as Login Interface
+    participant Auth as Authentication Service
+    participant DB as Database
+    participant Dash as Admin Dashboard
+
+    Admin->>Login: Enter credentials
+    Login->>Auth: Submit login request
+    Auth->>DB: Verify credentials & role
+    DB-->>Auth: Role = admin
+    Auth-->>Dash: Grant admin session
+    Dash-->>Admin: Render admin dashboard
+
+    Admin->>Dash: Manage Users
+    Dash->>DB: Update user_roles
+    Admin->>Dash: Manage Content (CMS)
+    Dash->>DB: Update blog_posts / site content
+    Admin->>Dash: Generate Reports
+    Dash->>DB: Query audit_log & analytics
+    Admin->>Dash: Logout
+    Dash->>Auth: Invalidate session

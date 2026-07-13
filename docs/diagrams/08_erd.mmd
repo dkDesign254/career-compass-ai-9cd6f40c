@@ -1,0 +1,55 @@
+erDiagram
+    USER ||--|| PROFILE : creates
+    PROFILE ||--o{ RESUME : "may have many"
+    RESUME ||--o{ CAREER_RECOMMENDATION : generates
+    PROFILE ||--|| EMPLOYABILITY_SCORE : has
+    PROFILE }o--o{ OPPORTUNITY : matches
+    PROFILE }o--o{ LEARNING_RESOURCE : supports
+
+    USER {
+        uuid UserID PK
+        string Email
+        string Password
+        string UserType
+        timestamp CreatedAt
+    }
+    PROFILE {
+        uuid ProfileID PK
+        uuid UserID FK
+        json Education
+        json Skills
+        json Interests
+        json Certifications
+        json Experience
+    }
+    RESUME {
+        uuid ResumeID PK
+        uuid ProfileID FK
+        string FilePath
+        json ExtractedSkills
+        int ATSScore
+    }
+    CAREER_RECOMMENDATION {
+        uuid RecommendationID PK
+        uuid ResumeID FK
+        string CareerName
+        int MatchScore
+    }
+    EMPLOYABILITY_SCORE {
+        uuid ScoreID PK
+        uuid ProfileID FK
+        int ScoreValue
+        date EvaluationDate
+    }
+    OPPORTUNITY {
+        uuid OpportunityID PK
+        string Title
+        string Type
+        string Description
+    }
+    LEARNING_RESOURCE {
+        uuid ResourceID PK
+        string SkillCategory
+        string ResourceName
+        string URL
+    }

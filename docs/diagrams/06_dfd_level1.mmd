@@ -1,0 +1,33 @@
+flowchart TB
+    P1([1.0 User Management])
+    P2([2.0 Resume Processing])
+    P3([3.0 Career Recommendation Engine])
+    P4([4.0 Employability Analysis])
+    P5([5.0 Opportunity Matching])
+
+    D1[(User DB)]
+    D2[(Resume DB)]
+    D3[(Career / Job DB)]
+    D4[(Analytics DB)]
+    D5[(Opportunity DB)]
+
+    Users((Student / Graduate))
+
+    Users -- "Registration · Credentials" --> P1
+    P1 -- "Auth Status · Profile" --> Users
+    P1 <--> D1
+
+    Users -- "Uploaded Resume" --> P2
+    P2 -- "Extracted Skills · Experience" --> P3
+    P2 <--> D2
+
+    P3 -- "Personalized Recommendations" --> Users
+    P3 <--> D3
+
+    Users -- "Skills · Certifications · Experience" --> P4
+    P4 -- "Employability Score · Skill Gaps" --> Users
+    P4 <--> D4
+
+    P3 --> P5
+    P5 -- "Internship / Job Recommendations" --> Users
+    P5 <--> D5

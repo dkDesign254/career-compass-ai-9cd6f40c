@@ -1,0 +1,19 @@
+flowchart LR
+    SG[Student / Graduate]
+    REC[Recruiter / Employer]
+    ADM[Administrator]
+    AI[External AI Provider]
+
+    SYS((CareerPilot AI System))
+
+    SG -- "Registration · Resume · Skills · Interests" --> SYS
+    SYS -- "Recommendations · Score · Skill Gaps · Coaching" --> SG
+
+    REC -- "Job Postings" --> SYS
+    SYS -- "Candidate Applications" --> REC
+
+    ADM -- "User Mgmt · Content Updates" --> SYS
+    SYS -- "Reports · Analytics Dashboards" --> ADM
+
+    SYS -- "Resume / NLP Requests" --> AI
+    AI -- "AI Analysis Results" --> SYS

@@ -1,0 +1,48 @@
+flowchart LR
+    Student((Student))
+    Graduate((Graduate))
+    Recruiter((Recruiter / Employer))
+    Admin((Administrator))
+
+    subgraph SYS["CareerPilot AI"]
+        UC1[Register / Login]
+        UC2[Create Career Profile]
+        UC3[Upload Resume]
+        UC4[Receive Career Recommendations]
+        UC5[View Employability Score]
+        UC6[View Skill-Gap Analysis]
+        UC7[Generate ATS Resume]
+        UC8[Chat with AI Coach]
+        UC9[Search / Apply to Opportunities]
+        UC10[Post Job Opportunities]
+        UC11[View Candidate Applications]
+        UC12[Manage Users & Roles]
+        UC13[Manage Content / CMS]
+        UC14[Monitor Analytics & Audit Log]
+        UC15[Manage AI Provider Keys]
+    end
+
+    Student --> UC1
+    Student --> UC2
+    Student --> UC3
+    Student --> UC4
+    Student --> UC5
+    Student --> UC6
+    Student --> UC7
+    Student --> UC8
+    Student --> UC9
+
+    Graduate --> UC1
+    Graduate --> UC3
+    Graduate --> UC4
+    Graduate --> UC8
+    Graduate --> UC9
+
+    Recruiter --> UC1
+    Recruiter --> UC10
+    Recruiter --> UC11
+
+    Admin --> UC12
+    Admin --> UC13
+    Admin --> UC14
+    Admin --> UC15
