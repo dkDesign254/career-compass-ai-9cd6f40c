@@ -15,7 +15,9 @@ export async function extractResumeText(file: File): Promise<string> {
   }
   if (name.endsWith(".pdf")) {
     const pdfjs: any = await import(/* @vite-ignore */ "pdfjs-dist/legacy/build/pdf.mjs" as any);
-    const workerUrl = (await import(/* @vite-ignore */ "pdfjs-dist/build/pdf.worker.mjs?url" as any)).default as string;
+    const workerUrl = (
+      await import(/* @vite-ignore */ "pdfjs-dist/build/pdf.worker.mjs?url" as any)
+    ).default as string;
     pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
     const buf = await file.arrayBuffer();
     const doc = await pdfjs.getDocument({ data: buf }).promise;

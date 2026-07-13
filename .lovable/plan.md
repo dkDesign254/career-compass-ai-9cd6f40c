@@ -3,6 +3,7 @@
 Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independently reviewable. No run starts until prior run's doc + changelog are written.
 
 ## Ground rules (apply to every run)
+
 - One repo only: `dkDesign254/AI-Career-Navigator` (GitHub sync — user must connect via UI).
 - Zero hardcoded content on user-facing pages. Everything reads from DB. Seed via migrations, not JSX.
 - All admin surfaces = full CRUD, audit-logged.
@@ -13,6 +14,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 6 — Audit + Design reset
+
 **Goal:** honest baseline + new visual identity before any feature work.
 
 1. **Audit doc** `docs/AUDIT.md`: every route, every table, every server fn, every gap vs. this plan. Marks what stays / rewrites / deletes.
@@ -29,6 +31,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 7 — Feed dashboard + Journey onboarding
+
 1. `/dashboard` becomes a **feed**: job matches, application updates, skill tips, recommendations — chronological, LinkedIn-feed shape.
 2. **First-run journey** (`/tour` + auto-trigger post-signup): 7 scenes (house → cab → toll → airport → terminal → gate → cockpit), each scene = one platform concept. Framer-motion scene transitions, clickable hotspots. Replayable from Help menu.
 3. **Help center** (`/help`): searchable, DB-backed articles (new `help_articles` table).
@@ -37,6 +40,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 8 — Jobs on-platform
+
 1. Extend scraper to capture **full description, salary, requirements** — store on `jobs`.
 2. New route `/jobs/$jobId`: on-platform detail page (no outbound redirect as primary CTA; external link kept as secondary "view original").
 3. **Per-job scores** (server-computed): compatibility, best-fit, alert-match, preference-match. Uses existing career_profile + AI gateway.
@@ -47,6 +51,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 9 — Scraper expansion + seeding
+
 1. Curated source list (all confirmed answers): BrighterMonday, Fuzu, MyJobMag, Corporate Staffing, RemoteOK, WeWorkRemotely, Remotive, Upwork public, Freelancer public, + 10 KE company ATS pages (Safaricom, Equity, KCB, etc.).
 2. Per-source **selector overrides** in `job_sources` for pages Firecrawl struggles with.
 3. **Seed migration**: 50 realistic scraped jobs + 20 demo users with resumes/ATS runs/scores for admin review.
@@ -56,6 +61,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 10 — Integrations (realistic)
+
 1. **LinkedIn OAuth** (basic profile) + **GitHub OAuth** — via Lovable Cloud managed social + Supabase provider config.
 2. **Profile-URL import**: user pastes LinkedIn/Fuzu/Upwork/Freelancer/Handshake URL → Firecrawl scrape → parse via AI gateway → prefill `career_profiles`.
 3. **GitHub repo import**: auto-populate projects section.
@@ -65,6 +71,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Run 11 — Admin polish + gap close
+
 1. **API key manager** UI (`/admin/api-keys`): add/rotate/delete Firecrawl, Lovable AI, provider keys via secrets tools. Super-admin only.
 2. **Content editor**: every landing-page string, hero image, testimonial, help article — editable via admin CMS. Zero hardcoded copy remains.
 3. **Full audit sweep**: any front-end field not editable server-side gets an admin form.
@@ -74,6 +81,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 ---
 
 ## Technical notes
+
 - Palette tokens (oklch) written to `src/styles.css` `:root` + `.dark`. Sidebar, cards, chart colors all re-derived.
 - Fonts via `@fontsource/fraunces` + `@fontsource/inter` imported in `src/main.tsx` or root route (check current wiring first).
 - Journey scenes: 7 generated illustrations (fast tier, ~1024×640 jpg) stored in `src/assets/journey/`.
@@ -83,6 +91,7 @@ Each run ends fully shipped, documented (`docs/runs/RUN-XX.md`), and independent
 - Seed data lives in `supabase/migrations/*_seed_demo.sql` — not in code.
 
 ## What I need from you to start Run 6
+
 Just: **"go"**. Palette, sources, integrations, landing shape are all locked from your answers above.
 
 GitHub sync: connect via chat + menu → GitHub → Connect (only you can do this). I'll keep pushing to the same repo automatically once connected.

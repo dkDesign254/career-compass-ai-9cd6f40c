@@ -3,7 +3,8 @@ import Firecrawl from "@mendable/firecrawl-js";
 
 export function getFirecrawl() {
   const apiKey = process.env.FIRECRAWL_API_KEY;
-  if (!apiKey) throw new Error("FIRECRAWL_API_KEY is not configured. Link the Firecrawl connector.");
+  if (!apiKey)
+    throw new Error("FIRECRAWL_API_KEY is not configured. Link the Firecrawl connector.");
   return new Firecrawl({ apiKey });
 }
 

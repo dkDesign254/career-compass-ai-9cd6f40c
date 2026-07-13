@@ -40,18 +40,24 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
             if (rows.length) {
               await supabaseAdmin.from("jobs").upsert(rows, { onConflict: "source,external_id" });
             }
-            await supabaseAdmin.from("job_sources").update({
-              last_scraped_at: new Date().toISOString(),
-              last_status: `ok (${rows.length})`,
-              last_error: null,
-            }).eq("id", s.id);
+            await supabaseAdmin
+              .from("job_sources")
+              .update({
+                last_scraped_at: new Date().toISOString(),
+                last_status: `ok (${rows.length})`,
+                last_error: null,
+              })
+              .eq("id", s.id);
             results.push({ source: s.name, count: rows.length });
           } catch (e: any) {
-            await supabaseAdmin.from("job_sources").update({
-              last_scraped_at: new Date().toISOString(),
-              last_status: "error",
-              last_error: (e?.message ?? String(e)).slice(0, 500),
-            }).eq("id", s.id);
+            await supabaseAdmin
+              .from("job_sources")
+              .update({
+                last_scraped_at: new Date().toISOString(),
+                last_status: "error",
+                last_error: (e?.message ?? String(e)).slice(0, 500),
+              })
+              .eq("id", s.id);
             results.push({ source: s.name, error: e?.message ?? String(e) });
           }
         }

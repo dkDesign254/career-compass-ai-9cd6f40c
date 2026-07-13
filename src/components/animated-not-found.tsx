@@ -54,7 +54,9 @@ export function AnimatedNotFound() {
           className="mt-8 flex flex-wrap justify-center gap-3"
         >
           <Button asChild>
-            <Link to="/"><Home className="mr-2 h-4 w-4" /> Home</Link>
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" /> Home
+            </Link>
           </Button>
           <Button variant="outline" onClick={() => history.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Go back

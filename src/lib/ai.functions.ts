@@ -16,17 +16,18 @@ const QUOTA_TYPES = new Set([
   "interview_kit",
 ]);
 
-type SupabaseClient = Awaited<ReturnType<typeof import("@/integrations/supabase/client").supabase.auth.getUser>> extends never ? never : any;
+type SupabaseClient =
+  Awaited<
+    ReturnType<typeof import("@/integrations/supabase/client").supabase.auth.getUser>
+  > extends never
+    ? never
+    : any;
 
 function monthKey(d = new Date()) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
 }
 
-async function checkAndConsumeQuota(
-  supabase: any,
-  userId: string,
-  runType: string,
-) {
+async function checkAndConsumeQuota(supabase: any, userId: string, runType: string) {
   if (!QUOTA_TYPES.has(runType)) return;
 
   // Active paid plan bypasses the free quota.
@@ -46,9 +47,7 @@ async function checkAndConsumeQuota(
     .eq("period_month", period);
   if (countErr) throw new Error(countErr.message);
   if ((count ?? 0) >= FREE_QUOTA) {
-    throw new Error(
-      `You've used your ${FREE_QUOTA} free AI runs this month. Upgrade to continue.`,
-    );
+    throw new Error(`You've used your ${FREE_QUOTA} free AI runs this month. Upgrade to continue.`);
   }
 
   const { error: insErr } = await supabase
@@ -258,14 +257,16 @@ export const optimizeResume = createServerFn({ method: "POST" })
 /* ---------------- Career recommendations ---------------- */
 
 const RecsSchema = z.object({
-  career_paths: z.array(
-    z.object({
-      title: z.string(),
-      fit_score: z.number().min(0).max(100),
-      why: z.string(),
-      first_90_days: z.array(z.string()).max(5),
-    }),
-  ).max(5),
+  career_paths: z
+    .array(
+      z.object({
+        title: z.string(),
+        fit_score: z.number().min(0).max(100),
+        why: z.string(),
+        first_90_days: z.array(z.string()).max(5),
+      }),
+    )
+    .max(5),
   upskilling: z.array(z.string()).max(6),
   networking: z.array(z.string()).max(4),
 });
@@ -336,14 +337,16 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
 /* ---------------- Interview kit ---------------- */
 
 const InterviewSchema = z.object({
-  questions: z.array(
-    z.object({
-      question: z.string(),
-      category: z.enum(["behavioral", "technical", "situational", "culture"]),
-      what_they_assess: z.string(),
-      sample_answer: z.string(),
-    }),
-  ).max(8),
+  questions: z
+    .array(
+      z.object({
+        question: z.string(),
+        category: z.enum(["behavioral", "technical", "situational", "culture"]),
+        what_they_assess: z.string(),
+        sample_answer: z.string(),
+      }),
+    )
+    .max(8),
   preparation_tips: z.array(z.string()).max(5),
 });
 

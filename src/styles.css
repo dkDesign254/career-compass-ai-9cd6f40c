@@ -65,35 +65,35 @@
      Ivory canvas, deep ink text, Handshake orange as accent,
      midnight navy as headings/brand, mint/sage surfaces. */
   --radius: 0.625rem;
-  --background: oklch(0.985 0.005 85);       /* ivory */
-  --foreground: oklch(0.17 0.02 250);        /* deep navy ink */
+  --background: oklch(0.985 0.005 85); /* ivory */
+  --foreground: oklch(0.17 0.02 250); /* deep navy ink */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.17 0.02 250);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.17 0.02 250);
-  --primary: oklch(0.22 0.06 258);           /* Handshake midnight #1A2A4A */
+  --primary: oklch(0.22 0.06 258); /* Handshake midnight #1A2A4A */
   --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.955 0.02 155);        /* mint surface */
+  --secondary: oklch(0.955 0.02 155); /* mint surface */
   --secondary-foreground: oklch(0.24 0.03 175);
   --muted: oklch(0.96 0.006 85);
   --muted-foreground: oklch(0.44 0.02 250);
-  --accent: oklch(0.72 0.18 42);             /* Handshake orange */
+  --accent: oklch(0.72 0.18 42); /* Handshake orange */
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.9 0.008 85);
   --input: oklch(0.92 0.008 85);
   --ring: oklch(0.72 0.18 42);
-  --brand: oklch(0.22 0.06 258);             /* navy brand */
+  --brand: oklch(0.22 0.06 258); /* navy brand */
   --brand-foreground: oklch(0.985 0.005 85);
-  --coral: oklch(0.72 0.18 42);              /* orange accent */
-  --teal: oklch(0.55 0.13 195);              /* teal highlight */
+  --coral: oklch(0.72 0.18 42); /* orange accent */
+  --teal: oklch(0.55 0.13 195); /* teal highlight */
   --chart-1: oklch(0.22 0.06 258);
   --chart-2: oklch(0.72 0.18 42);
   --chart-3: oklch(0.6 0.13 165);
   --chart-4: oklch(0.72 0.14 85);
   --chart-5: oklch(0.55 0.14 305);
-  --sidebar: oklch(1 0 0);                   /* light rail à la Handshake */
+  --sidebar: oklch(1 0 0); /* light rail à la Handshake */
   --sidebar-foreground: oklch(0.17 0.02 250);
   --sidebar-primary: oklch(0.22 0.06 258);
   --sidebar-primary-foreground: oklch(0.985 0.005 85);
@@ -154,7 +154,12 @@
     font-feature-settings: "cv11", "ss01";
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
     font-weight: 500;
@@ -164,8 +169,16 @@
 @layer utilities {
   .bg-grid {
     background-image:
-      linear-gradient(to right, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+        transparent 1px
+      );
     background-size: 48px 48px;
   }
   .glow {
@@ -177,9 +190,21 @@
     background-clip: text;
     color: transparent;
   }
-  .bg-mint { background-color: oklch(0.955 0.02 155); }
-  .bg-peach { background-color: oklch(0.94 0.04 55); }
-  .bg-sky { background-color: oklch(0.93 0.03 230); }
-  .bg-butter { background-color: oklch(0.95 0.05 95); }
-  .ring-soft { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12); }
+  .bg-mint {
+    background-color: oklch(0.955 0.02 155);
+  }
+  .bg-peach {
+    background-color: oklch(0.94 0.04 55);
+  }
+  .bg-sky {
+    background-color: oklch(0.93 0.03 230);
+  }
+  .bg-butter {
+    background-color: oklch(0.95 0.05 95);
+  }
+  .ring-soft {
+    box-shadow:
+      0 1px 2px 0 rgb(0 0 0 / 0.04),
+      0 8px 24px -12px rgb(15 23 42 / 0.12);
+  }
 }

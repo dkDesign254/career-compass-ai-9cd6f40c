@@ -8,7 +8,10 @@ async function assertRecruiter(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "recruiter" });
   if (error) throw new Error(error.message);
   const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  const { data: isCA } = await supabase.rpc("has_role", { _user_id: userId, _role: "company_admin" });
+  const { data: isCA } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    _role: "company_admin",
+  });
   if (!data && !isAdmin && !isCA) throw new Error("Recruiter access required.");
 }
 
@@ -16,7 +19,9 @@ export const becomeRecruiter = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context as any;
-    const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "recruiter" });
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: userId, role: "recruiter" });
     if (error && !`${error.message}`.includes("duplicate")) throw new Error(error.message);
     return { ok: true };
   });
@@ -28,7 +33,9 @@ export const listMyJobs = createServerFn({ method: "GET" })
     await assertRecruiter(supabase, userId);
     const { data, error } = await supabase
       .from("jobs")
-      .select("id, title, location, work_mode, employment_type, status, application_count, application_cap, deadline, created_at, company_id, companies(name)")
+      .select(
+        "id, title, location, work_mode, employment_type, status, application_count, application_cap, deadline, created_at, company_id, companies(name)",
+      )
       .eq("posted_by", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -118,7 +125,9 @@ export const listApplicants = createServerFn({ method: "POST" })
 
     const { data: apps, error } = await supabase
       .from("applications")
-      .select("id, status, match_score, match_analysis, notes, applied_at, created_at, user_id, resume_id, resumes(file_path, file_name, ats_score)")
+      .select(
+        "id, status, match_score, match_analysis, notes, applied_at, created_at, user_id, resume_id, resumes(file_path, file_name, ats_score)",
+      )
       .eq("job_id", data.jobId)
       .order("match_score", { ascending: false, nullsFirst: false });
     if (error) throw new Error(error.message);
@@ -128,12 +137,18 @@ export const listApplicants = createServerFn({ method: "POST" })
     let profiles: Record<string, { full_name: string | null }> = {};
     if (ids.length) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: ps } = await supabaseAdmin.from("profiles").select("id, full_name").in("id", ids);
+      const { data: ps } = await supabaseAdmin
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
       profiles = Object.fromEntries((ps ?? []).map((p: any) => [p.id, { full_name: p.full_name }]));
     }
     return {
       job,
-      applicants: (apps ?? []).map((a: any) => ({ ...a, applicant: profiles[a.user_id] ?? { full_name: null } })),
+      applicants: (apps ?? []).map((a: any) => ({
+        ...a,
+        applicant: profiles[a.user_id] ?? { full_name: null },
+      })),
     };
   });
 
@@ -160,7 +175,12 @@ export const decideApplication = createServerFn({ method: "POST" })
     if (aErr) throw new Error(aErr.message);
     if ((app as any).jobs.posted_by !== userId) throw new Error("Forbidden");
 
-    const nextStatus = data.decision === "proceed" ? "interview" : data.decision === "shortlist" ? "shortlisted" : "rejected";
+    const nextStatus =
+      data.decision === "proceed"
+        ? "interview"
+        : data.decision === "shortlist"
+          ? "shortlisted"
+          : "rejected";
     const { error: uErr } = await supabase
       .from("applications")
       .update({ status: nextStatus })
@@ -169,18 +189,29 @@ export const decideApplication = createServerFn({ method: "POST" })
 
     const { data: thread, error: tErr } = await supabase
       .from("feedback_threads")
-      .insert({ application_id: data.applicationId, decision: data.decision, recruiter_message: data.message })
+      .insert({
+        application_id: data.applicationId,
+        decision: data.decision,
+        recruiter_message: data.message,
+      })
       .select("id")
       .single();
     if (tErr) throw new Error(tErr.message);
 
-    await supabase.from("feedback_messages").insert({ thread_id: thread.id, sender_id: userId, body: data.message });
+    await supabase
+      .from("feedback_messages")
+      .insert({ thread_id: thread.id, sender_id: userId, body: data.message });
 
     await supabase.from("notifications").insert({
       user_id: (app as any).user_id,
       type: "application_decision",
       title: `Update on your application: ${(app as any).jobs.title}`,
-      body: data.decision === "proceed" ? "You've been invited to the next round." : data.decision === "shortlist" ? "You've been shortlisted." : "The role has been filled by another candidate.",
+      body:
+        data.decision === "proceed"
+          ? "You've been invited to the next round."
+          : data.decision === "shortlist"
+            ? "You've been shortlisted."
+            : "The role has been filled by another candidate.",
       link: `/applications`,
     });
 

@@ -9,9 +9,18 @@ export const getJobDetail = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context as any;
     const [jobRes, profileRes, appRes] = await Promise.all([
-      supabase.from("jobs").select("*, companies(name, logo_url, website, description)").eq("id", data.id).single(),
+      supabase
+        .from("jobs")
+        .select("*, companies(name, logo_url, website, description)")
+        .eq("id", data.id)
+        .single(),
       supabase.from("career_profiles").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("applications").select("id, status, created_at").eq("user_id", userId).eq("job_id", data.id).maybeSingle(),
+      supabase
+        .from("applications")
+        .select("id, status, created_at")
+        .eq("user_id", userId)
+        .eq("job_id", data.id)
+        .maybeSingle(),
     ]);
     if (jobRes.error) throw new Error(jobRes.error.message);
     const job = jobRes.data;

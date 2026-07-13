@@ -1,8 +1,21 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  Compass, LayoutDashboard, FileCheck2, Target, Brain, Sparkles,
-  Briefcase, Bell, LogOut, Menu, X, User, ClipboardList, Building2, Shield,
+  Compass,
+  LayoutDashboard,
+  FileCheck2,
+  Target,
+  Brain,
+  Sparkles,
+  Briefcase,
+  Bell,
+  LogOut,
+  Menu,
+  X,
+  User,
+  ClipboardList,
+  Building2,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -24,13 +37,9 @@ const baseNav = [
   { to: "/applications", label: "My Applications", icon: ClipboardList },
 ] as const;
 
-const recruiterNav = [
-  { to: "/recruiter", label: "Recruiter", icon: Building2 },
-] as const;
+const recruiterNav = [{ to: "/recruiter", label: "Recruiter", icon: Building2 }] as const;
 
-const adminNav = [
-  { to: "/admin", label: "Admin console", icon: Shield },
-] as const;
+const adminNav = [{ to: "/admin", label: "Admin console", icon: Shield }] as const;
 
 export function AppShell({ children }: { children?: ReactNode }) {
   const location = useLocation();
@@ -38,14 +47,16 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const rolesFn = useServerFn(getMyRoles);
-  const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn(), staleTime: 60_000 });
-  const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
+  const { data: roles } = useQuery({
+    queryKey: ["my-roles"],
+    queryFn: () => rolesFn(),
+    staleTime: 60_000,
+  });
+  const isRecruiter = (roles ?? []).some((r) =>
+    ["recruiter", "company_admin", "admin"].includes(r),
+  );
   const isAdmin = (roles ?? []).includes("admin");
-  const nav = [
-    ...baseNav,
-    ...(isRecruiter ? recruiterNav : []),
-    ...(isAdmin ? adminNav : []),
-  ];
+  const nav = [...baseNav, ...(isRecruiter ? recruiterNav : []), ...(isAdmin ? adminNav : [])];
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -60,10 +71,12 @@ export function AppShell({ children }: { children?: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar (desktop) */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-64 transform border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0",
-        open ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 w-64 transform border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
           <Link to="/dashboard" className="flex items-center gap-2 font-display text-lg font-bold">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-coral text-white">
@@ -71,7 +84,12 @@ export function AppShell({ children }: { children?: ReactNode }) {
             </span>
             CareerPilot
           </Link>
-          <Button variant="ghost" size="icon" className="lg:hidden text-sidebar-foreground" onClick={() => setOpen(false)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden text-sidebar-foreground"
+            onClick={() => setOpen(false)}
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -84,7 +102,9 @@ export function AppShell({ children }: { children?: ReactNode }) {
                 to={item.to}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent"
+                  active
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "hover:bg-sidebar-accent",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -94,10 +114,16 @@ export function AppShell({ children }: { children?: ReactNode }) {
           })}
         </nav>
         <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-3">
-          <Link to="/profile" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent">
+          <Link
+            to="/profile"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent"
+          >
             <User className="h-4 w-4" /> Profile
           </Link>
-          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent">
+          <button
+            onClick={signOut}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent"
+          >
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </div>

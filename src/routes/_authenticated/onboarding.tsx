@@ -9,7 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -122,14 +128,18 @@ function Onboarding() {
             <Progress value={((step + 1) / STEPS.length) * 100} />
             <div className="mt-2 flex justify-between text-xs text-muted-foreground">
               {STEPS.map((s, i) => (
-                <span key={s} className={i === step ? "font-medium text-foreground" : ""}>{s}</span>
+                <span key={s} className={i === step ? "font-medium text-foreground" : ""}>
+                  {s}
+                </span>
               ))}
             </div>
           </div>
         </div>
 
         <Card>
-          <CardHeader><CardTitle>{STEPS[step]}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{STEPS[step]}</CardTitle>
+          </CardHeader>
           <CardContent>
             <AnimatePresence mode="wait">
               <motion.div
@@ -144,16 +154,31 @@ function Onboarding() {
                   <>
                     <div className="space-y-2">
                       <Label>Target role</Label>
-                      <Input placeholder="e.g. Data Analyst" value={form.target_role} onChange={(e) => setField("target_role", e.target.value)} />
+                      <Input
+                        placeholder="e.g. Data Analyst"
+                        value={form.target_role}
+                        onChange={(e) => setField("target_role", e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Industry</Label>
-                      <Input placeholder="e.g. Fintech" value={form.industry} onChange={(e) => setField("industry", e.target.value)} />
+                      <Input
+                        placeholder="e.g. Fintech"
+                        value={form.industry}
+                        onChange={(e) => setField("industry", e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Experience level</Label>
-                      <Select value={form.experience_level} onValueChange={(v) => setField("experience_level", v as Form["experience_level"])}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={form.experience_level}
+                        onValueChange={(v) =>
+                          setField("experience_level", v as Form["experience_level"])
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="student">Student / no work yet</SelectItem>
                           <SelectItem value="entry">Entry-level (0–2 yrs)</SelectItem>
@@ -164,7 +189,11 @@ function Onboarding() {
                     </div>
                     <div className="space-y-2">
                       <Label>Target locations</Label>
-                      <TagInput value={form.target_locations} onChange={(v) => setField("target_locations", v)} placeholder="Nairobi, Remote…" />
+                      <TagInput
+                        value={form.target_locations}
+                        onChange={(v) => setField("target_locations", v)}
+                        placeholder="Nairobi, Remote…"
+                      />
                     </div>
                   </>
                 )}
@@ -172,8 +201,14 @@ function Onboarding() {
                 {step === 1 && (
                   <div className="space-y-2">
                     <Label>Your skills</Label>
-                    <TagInput value={form.skills} onChange={(v) => setField("skills", v)} placeholder="Add a skill and press Enter" />
-                    <p className="text-xs text-muted-foreground">Press Enter or comma to add. Aim for 5–15.</p>
+                    <TagInput
+                      value={form.skills}
+                      onChange={(v) => setField("skills", v)}
+                      placeholder="Add a skill and press Enter"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Press Enter or comma to add. Aim for 5–15.
+                    </p>
                   </div>
                 )}
 
@@ -181,15 +216,35 @@ function Onboarding() {
                   <>
                     <div className="space-y-2">
                       <Label>Institution</Label>
-                      <Input value={form.education.institution} onChange={(e) => setField("education", { ...form.education, institution: e.target.value })} />
+                      <Input
+                        value={form.education.institution}
+                        onChange={(e) =>
+                          setField("education", { ...form.education, institution: e.target.value })
+                        }
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Qualification</Label>
-                      <Input placeholder="e.g. BSc Computer Science" value={form.education.qualification} onChange={(e) => setField("education", { ...form.education, qualification: e.target.value })} />
+                      <Input
+                        placeholder="e.g. BSc Computer Science"
+                        value={form.education.qualification}
+                        onChange={(e) =>
+                          setField("education", {
+                            ...form.education,
+                            qualification: e.target.value,
+                          })
+                        }
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Year completed (or expected)</Label>
-                      <Input placeholder="2025" value={form.education.year} onChange={(e) => setField("education", { ...form.education, year: e.target.value })} />
+                      <Input
+                        placeholder="2025"
+                        value={form.education.year}
+                        onChange={(e) =>
+                          setField("education", { ...form.education, year: e.target.value })
+                        }
+                      />
                     </div>
                   </>
                 )}
@@ -198,11 +253,21 @@ function Onboarding() {
                   <>
                     <div className="space-y-2">
                       <Label>Work / project history</Label>
-                      <Textarea rows={6} placeholder="Describe roles, internships, or projects with impact and outcomes." value={form.work_history} onChange={(e) => setField("work_history", e.target.value)} />
+                      <Textarea
+                        rows={6}
+                        placeholder="Describe roles, internships, or projects with impact and outcomes."
+                        value={form.work_history}
+                        onChange={(e) => setField("work_history", e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Career goals</Label>
-                      <Textarea rows={3} placeholder="Where do you want to be in 2 years?" value={form.career_goals} onChange={(e) => setField("career_goals", e.target.value)} />
+                      <Textarea
+                        rows={3}
+                        placeholder="Where do you want to be in 2 years?"
+                        value={form.career_goals}
+                        onChange={(e) => setField("career_goals", e.target.value)}
+                      />
                     </div>
                   </>
                 )}
@@ -214,7 +279,10 @@ function Onboarding() {
                     <Row label="Experience" value={form.experience_level} />
                     <Row label="Locations" value={form.target_locations.join(", ") || "—"} />
                     <Row label="Skills" value={`${form.skills.length} added`} />
-                    <Row label="Education" value={`${form.education.qualification || "—"} · ${form.education.institution || "—"}`} />
+                    <Row
+                      label="Education"
+                      value={`${form.education.qualification || "—"} · ${form.education.institution || "—"}`}
+                    />
                     <Row label="Goals" value={form.career_goals ? "Provided" : "—"} />
                   </div>
                 )}
@@ -228,10 +296,17 @@ function Onboarding() {
             <ArrowLeft className="mr-1 h-4 w-4" /> Back
           </Button>
           {step < STEPS.length - 1 ? (
-            <Button disabled={!canNext} onClick={() => setStep((s) => s + 1)}>Continue <ArrowRight className="ml-1 h-4 w-4" /></Button>
+            <Button disabled={!canNext} onClick={() => setStep((s) => s + 1)}>
+              Continue <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
           ) : (
             <Button onClick={submit} disabled={saving}>
-              {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />} Save & continue
+              {saving ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="mr-1 h-4 w-4" />
+              )}{" "}
+              Save & continue
             </Button>
           )}
         </div>
@@ -249,7 +324,15 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function TagInput({ value, onChange, placeholder }: { value: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
+function TagInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) {
   const [draft, setDraft] = useState("");
   const add = () => {
     const v = draft.trim().replace(/,$/, "");
@@ -262,7 +345,12 @@ function TagInput({ value, onChange, placeholder }: { value: string[]; onChange:
     <div className="rounded-md border border-input bg-background p-2">
       <div className="flex flex-wrap gap-1.5">
         {value.map((t) => (
-          <Badge key={t} variant="secondary" className="cursor-pointer" onClick={() => onChange(value.filter((x) => x !== t))}>
+          <Badge
+            key={t}
+            variant="secondary"
+            className="cursor-pointer"
+            onClick={() => onChange(value.filter((x) => x !== t))}
+          >
             {t} ×
           </Badge>
         ))}
@@ -272,7 +360,10 @@ function TagInput({ value, onChange, placeholder }: { value: string[]; onChange:
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              add();
+            }
             if (e.key === "Backspace" && !draft && value.length) onChange(value.slice(0, -1));
           }}
           onBlur={add}

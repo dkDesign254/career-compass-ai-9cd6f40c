@@ -8,7 +8,9 @@ export function ScoreRing({ score, label }: { score: number; label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center">
       <div className={cn("font-display text-5xl font-bold", color)}>{score}</div>
-      <div className="text-xs uppercase tracking-wider text-muted-foreground">{label ?? "Score"}</div>
+      <div className="text-xs uppercase tracking-wider text-muted-foreground">
+        {label ?? "Score"}
+      </div>
     </div>
   );
 }
@@ -25,12 +27,20 @@ export function MetricRow({ label, value }: { label: string; value: number }) {
   );
 }
 
-export function ChipList({ items, variant = "default" }: { items: string[]; variant?: "default" | "secondary" | "destructive" | "outline" }) {
+export function ChipList({
+  items,
+  variant = "default",
+}: {
+  items: string[];
+  variant?: "default" | "secondary" | "destructive" | "outline";
+}) {
   if (!items?.length) return <p className="text-sm text-muted-foreground">None.</p>;
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((s, i) => (
-        <Badge key={i} variant={variant}>{s}</Badge>
+        <Badge key={i} variant={variant}>
+          {s}
+        </Badge>
       ))}
     </div>
   );
@@ -39,7 +49,9 @@ export function ChipList({ items, variant = "default" }: { items: string[]; vari
 export function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">{title}</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
       <CardContent className="space-y-3">{children}</CardContent>
     </Card>
   );

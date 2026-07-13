@@ -29,7 +29,9 @@ function ApplicationsPage() {
   const { data, isLoading } = useQuery({ queryKey: ["my-apps"], queryFn: () => fn() });
   const [openId, setOpenId] = useState<string | null>(null);
   const [uid, setUid] = useState<string>("");
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? "")); }, []);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? ""));
+  }, []);
 
   return (
     <AppShell>
@@ -38,28 +40,45 @@ function ApplicationsPage() {
           <ClipboardList className="h-6 w-6 text-coral" />
           <h1 className="font-display text-2xl font-bold">My Applications</h1>
         </div>
-        {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> :
-         !data?.length ? (
-           <Card><CardContent className="py-12 text-center text-muted-foreground">No applications yet. Browse jobs to apply.</CardContent></Card>
-         ) : (
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : !data?.length ? (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No applications yet. Browse jobs to apply.
+            </CardContent>
+          </Card>
+        ) : (
           <div className="space-y-3">
             {data.map((a: any) => (
               <Card key={a.id}>
                 <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
                   <div>
                     <CardTitle className="text-base">{a.jobs?.title ?? "Job"}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{a.jobs?.companies?.name} · {a.jobs?.location ?? "—"} · {a.jobs?.work_mode ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.jobs?.companies?.name} · {a.jobs?.location ?? "—"} ·{" "}
+                      {a.jobs?.work_mode ?? "—"}
+                    </p>
                   </div>
                   <Badge variant={statusColor[a.status] ?? "outline"}>{a.status}</Badge>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Applied {a.applied_at ? new Date(a.applied_at).toLocaleDateString() : "—"}</span>
-                    <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setOpenId(openId === a.id ? null : a.id)}>
+                    <span>
+                      Applied {a.applied_at ? new Date(a.applied_at).toLocaleDateString() : "—"}
+                    </span>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0"
+                      onClick={() => setOpenId(openId === a.id ? null : a.id)}
+                    >
                       {openId === a.id ? "Hide thread" : "View recruiter response"}
                     </Button>
                   </div>
-                  {openId === a.id && uid && <FeedbackThread applicationId={a.id} currentUserId={uid} />}
+                  {openId === a.id && uid && (
+                    <FeedbackThread applicationId={a.id} currentUserId={uid} />
+                  )}
                 </CardContent>
               </Card>
             ))}
