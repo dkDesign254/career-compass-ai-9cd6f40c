@@ -69,6 +69,9 @@ export function mapGatewayError(err: unknown): GatewayError {
           : 500;
   if (status === 429) return new GatewayError(429, "AI is busy. Please try again in a moment.");
   if (status === 402)
-    return new GatewayError(402, "AI credits exhausted on this workspace. Please add credits to continue.");
+    return new GatewayError(
+      402,
+      "AI credits exhausted on this workspace. Please add credits to continue.",
+    );
   return new GatewayError(status, msg || "AI request failed.");
 }

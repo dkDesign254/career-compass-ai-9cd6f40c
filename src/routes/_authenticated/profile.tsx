@@ -30,23 +30,34 @@ function ProfilePage() {
   const applyFn = useServerFn(applyProfileImport);
   const qc = useQueryClient();
   const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn() });
-  const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
+  const isRecruiter = (roles ?? []).some((r) =>
+    ["recruiter", "company_admin", "admin"].includes(r),
+  );
   const [importUrl, setImportUrl] = useState("");
   const [preview, setPreview] = useState<{ source: string; parsed: any } | null>(null);
   const enable = useMutation({
     mutationFn: () => recruiterFn(),
-    onSuccess: () => { toast.success("Recruiter access granted"); qc.invalidateQueries({ queryKey: ["my-roles"] }); },
+    onSuccess: () => {
+      toast.success("Recruiter access granted");
+      qc.invalidateQueries({ queryKey: ["my-roles"] });
+    },
     onError: (e: any) => toast.error(e.message ?? "Failed"),
   });
   const previewMut = useMutation({
     mutationFn: (url: string) => previewFn({ data: { url } }),
-    onSuccess: (r: any) => { setPreview(r); toast.success("Preview ready — review, then apply."); },
+    onSuccess: (r: any) => {
+      setPreview(r);
+      toast.success("Preview ready — review, then apply.");
+    },
     onError: (e: any) => toast.error(e.message ?? "Import failed"),
   });
   const applyMut = useMutation({
-    mutationFn: (mode: "merge" | "replace") =>
-      applyFn({ data: { parsed: preview!.parsed, mode } }),
-    onSuccess: () => { toast.success("Profile updated from import"); setPreview(null); setImportUrl(""); },
+    mutationFn: (mode: "merge" | "replace") => applyFn({ data: { parsed: preview!.parsed, mode } }),
+    onSuccess: () => {
+      toast.success("Profile updated from import");
+      setPreview(null);
+      setImportUrl("");
+    },
     onError: (e: any) => toast.error(e.message ?? "Save failed"),
   });
 
@@ -55,7 +66,11 @@ function ProfilePage() {
       const { data } = await supabase.auth.getUser();
       if (!data.user) return;
       setEmail(data.user.email ?? "");
-      const { data: p } = await supabase.from("profiles").select("full_name").eq("id", data.user.id).maybeSingle();
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", data.user.id)
+        .maybeSingle();
       if (p?.full_name) setFullName(p.full_name);
     })();
   }, []);
@@ -64,7 +79,10 @@ function ProfilePage() {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
-    const { error } = await supabase.from("profiles").update({ full_name: fullName }).eq("id", u.user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ full_name: fullName })
+      .eq("id", u.user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Profile updated");
@@ -75,18 +93,34 @@ function ProfilePage() {
       <div className="mx-auto max-w-2xl space-y-6">
         <h1 className="font-display text-2xl font-bold">Your profile</h1>
         <Card>
-          <CardHeader><CardTitle>Account</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2"><Label>Email</Label><Input value={email} disabled /></div>
-            <div className="space-y-2"><Label>Full name</Label><Input value={fullName} onChange={(e) => setFullName(e.target.value)} /></div>
-            <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={email} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label>Full name</Label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </div>
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Career profile</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Career profile</CardTitle>
+          </CardHeader>
           <CardContent className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Edit your goals, skills, and experience.</p>
-            <Button asChild variant="outline"><Link to="/onboarding">Edit profile</Link></Button>
+            <p className="text-sm text-muted-foreground">
+              Edit your goals, skills, and experience.
+            </p>
+            <Button asChild variant="outline">
+              <Link to="/onboarding">Edit profile</Link>
+            </Button>
           </CardContent>
         </Card>
         <Card>
@@ -97,12 +131,16 @@ function ProfilePage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Paste a public profile URL — GitHub (public API), portfolio, Fuzu, Wellfound, personal site.
-              LinkedIn is blocked by their bot policy; use your GitHub or portfolio instead.
+              Paste a public profile URL — GitHub (public API), portfolio, Fuzu, Wellfound, personal
+              site. LinkedIn is blocked by their bot policy; use your GitHub or portfolio instead.
             </p>
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><Github className="h-3 w-3" /> github.com/username</span>
-              <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" /> yourportfolio.com</span>
+              <span className="inline-flex items-center gap-1">
+                <Github className="h-3 w-3" /> github.com/username
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Globe className="h-3 w-3" /> yourportfolio.com
+              </span>
             </div>
             <div className="flex gap-2">
               <Input
@@ -121,24 +159,41 @@ function ProfilePage() {
             {preview && (
               <div className="space-y-3 rounded-md border bg-muted/30 p-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium uppercase text-muted-foreground">Preview · {preview.source}</span>
-                  <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setPreview(null)}>Discard</button>
+                  <span className="text-xs font-medium uppercase text-muted-foreground">
+                    Preview · {preview.source}
+                  </span>
+                  <button
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => setPreview(null)}
+                  >
+                    Discard
+                  </button>
                 </div>
-                {preview.parsed.target_role && <p><strong>Role:</strong> {preview.parsed.target_role}</p>}
+                {preview.parsed.target_role && (
+                  <p>
+                    <strong>Role:</strong> {preview.parsed.target_role}
+                  </p>
+                )}
                 {preview.parsed.target_locations?.length ? (
-                  <p><strong>Locations:</strong> {preview.parsed.target_locations.join(", ")}</p>
+                  <p>
+                    <strong>Locations:</strong> {preview.parsed.target_locations.join(", ")}
+                  </p>
                 ) : null}
                 {preview.parsed.skills?.length ? (
-                  <div><strong>Skills:</strong>
+                  <div>
+                    <strong>Skills:</strong>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {preview.parsed.skills.slice(0, 20).map((s: string, i: number) => (
-                        <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {s}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                 ) : null}
                 {preview.parsed.work_history?.length ? (
-                  <div><strong>Work history:</strong>
+                  <div>
+                    <strong>Work history:</strong>
                     <ul className="ml-4 list-disc text-xs text-muted-foreground">
                       {preview.parsed.work_history.slice(0, 5).map((w: any, i: number) => (
                         <li key={i}>{[w.title, w.company].filter(Boolean).join(" · ")}</li>
@@ -147,19 +202,32 @@ function ProfilePage() {
                   </div>
                 ) : null}
                 {preview.parsed.projects?.length ? (
-                  <div><strong>Projects ({preview.parsed.projects.length}):</strong>
+                  <div>
+                    <strong>Projects ({preview.parsed.projects.length}):</strong>
                     <ul className="ml-4 list-disc text-xs text-muted-foreground">
                       {preview.parsed.projects.slice(0, 5).map((p: any, i: number) => (
-                        <li key={i}>{p.name}{p.description ? ` — ${p.description.slice(0, 80)}` : ""}</li>
+                        <li key={i}>
+                          {p.name}
+                          {p.description ? ` — ${p.description.slice(0, 80)}` : ""}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 ) : null}
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" onClick={() => applyMut.mutate("merge")} disabled={applyMut.isPending}>
+                  <Button
+                    size="sm"
+                    onClick={() => applyMut.mutate("merge")}
+                    disabled={applyMut.isPending}
+                  >
                     {applyMut.isPending ? "Saving…" : "Merge into profile"}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => applyMut.mutate("replace")} disabled={applyMut.isPending}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => applyMut.mutate("replace")}
+                    disabled={applyMut.isPending}
+                  >
                     Replace fields
                   </Button>
                 </div>
@@ -168,16 +236,30 @@ function ProfilePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Roles & access</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Roles & access</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex flex-wrap gap-2">{(roles ?? []).map((r) => <Badge key={r} variant="secondary">{r}</Badge>)}</div>
+            <div className="flex flex-wrap gap-2">
+              {(roles ?? []).map((r) => (
+                <Badge key={r} variant="secondary">
+                  {r}
+                </Badge>
+              ))}
+            </div>
             {!isRecruiter ? (
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">Hiring? Enable recruiter access to post jobs and review applicants.</p>
-                <Button onClick={() => enable.mutate()} disabled={enable.isPending}>{enable.isPending ? "Enabling…" : "Enable recruiter"}</Button>
+                <p className="text-sm text-muted-foreground">
+                  Hiring? Enable recruiter access to post jobs and review applicants.
+                </p>
+                <Button onClick={() => enable.mutate()} disabled={enable.isPending}>
+                  {enable.isPending ? "Enabling…" : "Enable recruiter"}
+                </Button>
               </div>
             ) : (
-              <Button asChild variant="outline"><Link to="/recruiter">Open recruiter portal</Link></Button>
+              <Button asChild variant="outline">
+                <Link to="/recruiter">Open recruiter portal</Link>
+              </Button>
             )}
           </CardContent>
         </Card>

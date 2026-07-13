@@ -8,7 +8,9 @@ export const getDashboardFeed = createServerFn({ method: "GET" })
     const [jobsRes, appsRes, notesRes, profileRes] = await Promise.all([
       supabase
         .from("jobs")
-        .select("id, title, location, work_mode, employment_type, created_at, source, companies(name, logo_url)")
+        .select(
+          "id, title, location, work_mode, employment_type, created_at, source, companies(name, logo_url)",
+        )
         .eq("status", "open")
         .order("created_at", { ascending: false })
         .limit(12),

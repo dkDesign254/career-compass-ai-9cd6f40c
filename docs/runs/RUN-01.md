@@ -6,6 +6,7 @@
 ## What changed
 
 ### Backend (Lovable Cloud)
+
 - **Enabled** Lovable Cloud (Postgres + Auth + Storage).
 - **Schema** — 15 tables created with RLS enabled and GRANTs:
   - `profiles`, `user_roles`, `career_profiles`, `resumes`, `companies`, `jobs`,
@@ -20,6 +21,7 @@
 - **Auth:** email/password + Google (managed broker). HIBP enabled. Auto-confirm email on.
 
 ### Frontend
+
 - **Design tokens** (`src/styles.css`): brand navy `oklch(0.28 0.09 255)`, coral `oklch(0.72 0.17 32)`, teal `oklch(0.72 0.13 195)`; new `--color-brand/coral/teal` Tailwind tokens; `bg-grid`, `glow`, `text-gradient` utilities; Space Grotesk + Inter via `@fontsource`.
 - **Theme provider** (`src/components/theme-provider.tsx`): light/dark/system with `localStorage` persistence.
 - **Routes added:**
@@ -33,6 +35,7 @@
 - **Root layout** (`src/routes/__root.tsx`): QueryClientProvider, ThemeProvider, Sonner toaster, `onAuthStateChange` listener with filtered invalidation, brand metadata.
 
 ### Dependencies added
+
 - `@lovable.dev/cloud-auth-js`, `framer-motion`, `@fontsource/space-grotesk`, `@fontsource/inter`.
 
 ## Manual test checklist

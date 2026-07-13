@@ -18,7 +18,9 @@ export const listOpenJobs = createServerFn({ method: "POST" })
     const { supabase } = context as any;
     let q = supabase
       .from("jobs")
-      .select("id, title, location, work_mode, employment_type, salary_min, salary_max, salary_currency, deadline, created_at, application_count, application_cap, company_id, is_scraped, source, source_url, companies(name, logo_url)")
+      .select(
+        "id, title, location, work_mode, employment_type, salary_min, salary_max, salary_currency, deadline, created_at, application_count, application_cap, company_id, is_scraped, source, source_url, companies(name, logo_url)",
+      )
       .eq("status", "open")
       .order("created_at", { ascending: false })
       .limit(60);
@@ -48,7 +50,13 @@ export const getJob = createServerFn({ method: "POST" })
 export const applyToJob = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ jobId: z.string().uuid(), resumeId: z.string().uuid().optional(), notes: z.string().max(2000).optional() }).parse(input),
+    z
+      .object({
+        jobId: z.string().uuid(),
+        resumeId: z.string().uuid().optional(),
+        notes: z.string().max(2000).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context as any;
@@ -96,7 +104,9 @@ export const listMyApplications = createServerFn({ method: "GET" })
     const { supabase, userId } = context as any;
     const { data, error } = await supabase
       .from("applications")
-      .select("id, status, applied_at, created_at, job_id, jobs(title, location, work_mode, companies(name))")
+      .select(
+        "id, status, applied_at, created_at, job_id, jobs(title, location, work_mode, companies(name))",
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

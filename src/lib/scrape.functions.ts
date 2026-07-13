@@ -40,11 +40,16 @@ export const listJobSources = createServerFn({ method: "GET" })
 
 export const toggleJobSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ id: z.string().uuid(), enabled: z.boolean() }).parse(i))
+  .inputValidator((i: unknown) =>
+    z.object({ id: z.string().uuid(), enabled: z.boolean() }).parse(i),
+  )
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { supabase } = context as any;
-    const { error } = await supabase.from("job_sources").update({ enabled: data.enabled }).eq("id", data.id);
+    const { error } = await supabase
+      .from("job_sources")
+      .update({ enabled: data.enabled })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -52,7 +57,13 @@ export const toggleJobSource = createServerFn({ method: "POST" })
 export const addJobSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({ name: z.string().min(2), base_url: z.string().url(), region: z.string().optional() }).parse(i),
+    z
+      .object({
+        name: z.string().min(2),
+        base_url: z.string().url(),
+        region: z.string().optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
@@ -65,14 +76,16 @@ export const addJobSource = createServerFn({ method: "POST" })
 export const updateJobSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      name: z.string().min(2).optional(),
-      base_url: z.string().url().optional(),
-      region: z.string().nullable().optional(),
-      description: z.string().nullable().optional(),
-      enabled: z.boolean().optional(),
-    }).parse(i),
+    z
+      .object({
+        id: z.string().uuid(),
+        name: z.string().min(2).optional(),
+        base_url: z.string().url().optional(),
+        region: z.string().nullable().optional(),
+        description: z.string().nullable().optional(),
+        enabled: z.boolean().optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
@@ -80,7 +93,12 @@ export const updateJobSource = createServerFn({ method: "POST" })
     const { id, ...patch } = data;
     const { error } = await supabase.from("job_sources").update(patch).eq("id", id);
     if (error) throw new Error(error.message);
-    await supabase.rpc("log_admin_action", { _action: "update", _entity_type: "job_source", _entity_id: id, _metadata: patch });
+    await supabase.rpc("log_admin_action", {
+      _action: "update",
+      _entity_type: "job_source",
+      _entity_id: id,
+      _metadata: patch,
+    });
     return { ok: true };
   });
 
@@ -92,7 +110,12 @@ export const deleteJobSource = createServerFn({ method: "POST" })
     const { supabase } = context as any;
     const { error } = await supabase.from("job_sources").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
-    await supabase.rpc("log_admin_action", { _action: "delete", _entity_type: "job_source", _entity_id: data.id, _metadata: {} });
+    await supabase.rpc("log_admin_action", {
+      _action: "delete",
+      _entity_type: "job_source",
+      _entity_id: data.id,
+      _metadata: {},
+    });
     return { ok: true };
   });
 
@@ -100,7 +123,9 @@ export const deleteJobSource = createServerFn({ method: "POST" })
 // upserts by (source, external_id).
 export const runJobScrape = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => z.object({ sourceId: z.string().uuid().optional() }).parse(i ?? {}))
+  .inputValidator((i: unknown) =>
+    z.object({ sourceId: z.string().uuid().optional() }).parse(i ?? {}),
+  )
   .handler(async ({ context, data }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -136,18 +161,24 @@ export const runJobScrape = createServerFn({ method: "POST" })
           if (upErr) throw upErr;
           inserted = count ?? rows.length;
         }
-        await supabaseAdmin.from("job_sources").update({
-          last_scraped_at: new Date().toISOString(),
-          last_status: `ok (${rows.length})`,
-          last_error: null,
-        }).eq("id", s.id);
+        await supabaseAdmin
+          .from("job_sources")
+          .update({
+            last_scraped_at: new Date().toISOString(),
+            last_status: `ok (${rows.length})`,
+            last_error: null,
+          })
+          .eq("id", s.id);
         results.push({ source: s.name, inserted });
       } catch (e: any) {
-        await supabaseAdmin.from("job_sources").update({
-          last_scraped_at: new Date().toISOString(),
-          last_status: "error",
-          last_error: e?.message?.slice(0, 500) ?? String(e).slice(0, 500),
-        }).eq("id", s.id);
+        await supabaseAdmin
+          .from("job_sources")
+          .update({
+            last_scraped_at: new Date().toISOString(),
+            last_status: "error",
+            last_error: e?.message?.slice(0, 500) ?? String(e).slice(0, 500),
+          })
+          .eq("id", s.id);
         results.push({ source: s.name, inserted: 0, error: e?.message ?? String(e) });
       }
     }

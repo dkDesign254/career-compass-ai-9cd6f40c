@@ -28,12 +28,24 @@ const importedSchema = z.object({
     )
     .optional(),
   education: z
-    .array(z.object({ school: z.string().optional(), degree: z.string().optional(), year: z.string().optional() }))
+    .array(
+      z.object({
+        school: z.string().optional(),
+        degree: z.string().optional(),
+        year: z.string().optional(),
+      }),
+    )
     .optional(),
   certifications: z.array(z.string()).optional(),
   career_goals: z.string().nullable().optional(),
   projects: z
-    .array(z.object({ name: z.string(), description: z.string().optional(), url: z.string().optional() }))
+    .array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        url: z.string().optional(),
+      }),
+    )
     .optional(),
 });
 export type ImportedProfile = z.infer<typeof importedSchema>;
@@ -50,7 +62,9 @@ export const previewProfileImport = createServerFn({ method: "POST" })
       const username = data.url.split("github.com/")[1]?.split("/")[0]?.trim();
       if (!username) throw new Error("Couldn't read GitHub username from that URL.");
       const [userRes, repoRes] = await Promise.all([
-        fetch(`https://api.github.com/users/${username}`, { headers: { Accept: "application/vnd.github+json" } }),
+        fetch(`https://api.github.com/users/${username}`, {
+          headers: { Accept: "application/vnd.github+json" },
+        }),
         fetch(`https://api.github.com/users/${username}/repos?per_page=30&sort=updated`, {
           headers: { Accept: "application/vnd.github+json" },
         }),
@@ -64,7 +78,11 @@ export const previewProfileImport = createServerFn({ method: "POST" })
         .slice(0, 10)
         .map((r: any) => {
           if (r.language) languages.add(r.language);
-          return { name: r.name as string, description: r.description ?? "", url: r.html_url as string };
+          return {
+            name: r.name as string,
+            description: r.description ?? "",
+            url: r.html_url as string,
+          };
         });
       const parsed: ImportedProfile = {
         target_role: user.bio ?? undefined,
@@ -81,16 +99,20 @@ export const previewProfileImport = createServerFn({ method: "POST" })
     const fc = getFirecrawl();
     let markdown = "";
     try {
-      const res: any = await fc.scrape(data.url, { formats: ["markdown"], onlyMainContent: true } as any);
+      const res: any = await fc.scrape(data.url, {
+        formats: ["markdown"],
+        onlyMainContent: true,
+      } as any);
       markdown = res?.markdown ?? res?.data?.markdown ?? "";
     } catch (e: any) {
       throw new Error(
         kind === "linkedin"
           ? "LinkedIn blocks scrapers. Paste your CV instead, or import a public portfolio URL."
-          : e?.message ?? "Couldn't fetch that page.",
+          : (e?.message ?? "Couldn't fetch that page."),
       );
     }
-    if (!markdown || markdown.length < 40) throw new Error("The page didn't return usable content.");
+    if (!markdown || markdown.length < 40)
+      throw new Error("The page didn't return usable content.");
 
     const { generateObject } = await import("ai");
     const { createLovableAiGatewayProvider, mapGatewayError } = await import("./ai-gateway.server");
@@ -119,7 +141,9 @@ export const previewProfileImport = createServerFn({ method: "POST" })
 export const applyProfileImport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) =>
-    z.object({ parsed: importedSchema, mode: z.enum(["merge", "replace"]).default("merge") }).parse(i),
+    z
+      .object({ parsed: importedSchema, mode: z.enum(["merge", "replace"]).default("merge") })
+      .parse(i),
   )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context as any;
@@ -134,10 +158,11 @@ export const applyProfileImport = createServerFn({ method: "POST" })
       if (data.mode === "replace") return (b as any[]) ?? (a as any[]) ?? [];
       const merged = [...((a as any[]) ?? []), ...((b as any[]) ?? [])];
       // de-dupe primitive lists
-      if (merged.every((x) => typeof x === "string")) return Array.from(new Set(merged as string[]));
+      if (merged.every((x) => typeof x === "string"))
+        return Array.from(new Set(merged as string[]));
       return merged;
     };
-    const pickScalar = <T,>(a: T | null | undefined, b: T | null | undefined) =>
+    const pickScalar = <T>(a: T | null | undefined, b: T | null | undefined) =>
       data.mode === "replace" ? (b ?? a ?? null) : (a ?? b ?? null);
 
     const row = {

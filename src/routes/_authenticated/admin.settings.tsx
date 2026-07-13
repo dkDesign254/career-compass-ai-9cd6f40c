@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { listAiProviderKeys, setAiProviderKey, deactivateAiProviderKey } from "@/lib/admin.functions";
+import {
+  listAiProviderKeys,
+  setAiProviderKey,
+  deactivateAiProviderKey,
+} from "@/lib/admin.functions";
 
 const KNOWN_PROVIDERS = [
   { id: "openai", label: "OpenAI" },
@@ -33,13 +37,20 @@ function SettingsPage() {
   const keyed = new Map((data ?? []).map((k: any) => [k.provider, k]));
 
   const save = useMutation({
-    mutationFn: (vars: { provider: string; label: string; key_value: string }) => setFn({ data: vars }),
-    onSuccess: () => { toast.success("Key saved"); qc.invalidateQueries({ queryKey: ["ai-provider-keys"] }); },
+    mutationFn: (vars: { provider: string; label: string; key_value: string }) =>
+      setFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Key saved");
+      qc.invalidateQueries({ queryKey: ["ai-provider-keys"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
   const deactivate = useMutation({
     mutationFn: (provider: string) => deactivateFn({ data: { provider } }),
-    onSuccess: () => { toast.success("Key deactivated"); qc.invalidateQueries({ queryKey: ["ai-provider-keys"] }); },
+    onSuccess: () => {
+      toast.success("Key deactivated");
+      qc.invalidateQueries({ queryKey: ["ai-provider-keys"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -49,11 +60,13 @@ function SettingsPage() {
         <div>
           <h1 className="font-display text-2xl font-bold">AI provider keys</h1>
           <p className="text-sm text-muted-foreground">
-            Keys are encrypted in Supabase Vault. Only a masked preview is ever shown here, and the raw value never
-            reaches the browser after saving.
+            Keys are encrypted in Supabase Vault. Only a masked preview is ever shown here, and the
+            raw value never reaches the browser after saving.
           </p>
         </div>
-        {isLoading ? <p>Loading…</p> : (
+        {isLoading ? (
+          <p>Loading…</p>
+        ) : (
           <div className="grid gap-4">
             {KNOWN_PROVIDERS.map((p) => (
               <ProviderRow
@@ -61,7 +74,9 @@ function SettingsPage() {
                 provider={p.id}
                 label={p.label}
                 existing={keyed.get(p.id)}
-                onSave={(keyValue) => save.mutate({ provider: p.id, label: p.label, key_value: keyValue })}
+                onSave={(keyValue) =>
+                  save.mutate({ provider: p.id, label: p.label, key_value: keyValue })
+                }
                 onDeactivate={() => deactivate.mutate(p.id)}
                 saving={save.isPending}
               />
@@ -74,10 +89,19 @@ function SettingsPage() {
 }
 
 function ProviderRow({
-  provider, label, existing, onSave, onDeactivate, saving,
+  provider,
+  label,
+  existing,
+  onSave,
+  onDeactivate,
+  saving,
 }: {
-  provider: string; label: string; existing: any;
-  onSave: (keyValue: string) => void; onDeactivate: () => void; saving: boolean;
+  provider: string;
+  label: string;
+  existing: any;
+  onSave: (keyValue: string) => void;
+  onDeactivate: () => void;
+  saving: boolean;
 }) {
   const [value, setValue] = useState("");
   return (
@@ -92,7 +116,9 @@ function ProviderRow({
       </CardHeader>
       <CardContent className="flex items-end gap-2">
         <div className="flex-1">
-          <Label htmlFor={`key-${provider}`} className="text-xs">New key value</Label>
+          <Label htmlFor={`key-${provider}`} className="text-xs">
+            New key value
+          </Label>
           <Input
             id={`key-${provider}`}
             type="password"
@@ -103,12 +129,17 @@ function ProviderRow({
         </div>
         <Button
           disabled={!value || saving}
-          onClick={() => { onSave(value); setValue(""); }}
+          onClick={() => {
+            onSave(value);
+            setValue("");
+          }}
         >
           Save
         </Button>
         {existing?.is_active && (
-          <Button variant="outline" onClick={onDeactivate}>Deactivate</Button>
+          <Button variant="outline" onClick={onDeactivate}>
+            Deactivate
+          </Button>
         )}
       </CardContent>
     </Card>

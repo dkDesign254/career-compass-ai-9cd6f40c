@@ -26,14 +26,22 @@ function SkillGapPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
-        <Header icon={<Brain className="h-5 w-5" />} title="Skill gap analysis" desc="See exactly which skills you need for your target role — and how to learn them." />
+        <Header
+          icon={<Brain className="h-5 w-5" />}
+          title="Skill gap analysis"
+          desc="See exactly which skills you need for your target role — and how to learn them."
+        />
 
         {!m.data && !m.isPending && !m.error && (
           <Card>
             <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
               <Sparkles className="h-10 w-10 text-coral" />
-              <p className="text-muted-foreground">Identify your gaps against current market expectations.</p>
-              <Button onClick={() => m.mutate()} className="bg-brand hover:bg-brand/90">Run analysis</Button>
+              <p className="text-muted-foreground">
+                Identify your gaps against current market expectations.
+              </p>
+              <Button onClick={() => m.mutate()} className="bg-brand hover:bg-brand/90">
+                Run analysis
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -44,23 +52,41 @@ function SkillGapPage() {
         {m.data && (
           <div className="space-y-6">
             <Card>
-              <CardHeader><CardTitle>For: {m.data.target_role}</CardTitle></CardHeader>
-              <CardContent><p className="text-muted-foreground">{m.data.summary}</p></CardContent>
+              <CardHeader>
+                <CardTitle>For: {m.data.target_role}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{m.data.summary}</p>
+              </CardContent>
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Required skills</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Required skills</CardTitle>
+              </CardHeader>
               <CardContent className="divide-y divide-border">
                 {m.data.required_skills.map((s, i) => (
                   <div key={i} className="flex items-center justify-between py-3">
                     <div className="flex items-center gap-3">
-                      {s.have ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                      {s.have ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-destructive" />
+                      )}
                       <div>
                         <div className="font-medium">{s.name}</div>
                         <div className="text-xs text-muted-foreground">{s.proficiency_gap}</div>
                       </div>
                     </div>
-                    <Badge variant={s.importance === "critical" ? "destructive" : s.importance === "important" ? "default" : "outline"}>
+                    <Badge
+                      variant={
+                        s.importance === "critical"
+                          ? "destructive"
+                          : s.importance === "important"
+                            ? "default"
+                            : "outline"
+                      }
+                    >
                       {s.importance.replace("_", " ")}
                     </Badge>
                   </div>
@@ -69,7 +95,9 @@ function SkillGapPage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Learning plan</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Learning plan</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
                 {m.data.learning_plan.map((p, i) => (
                   <div key={i} className="rounded-lg border border-border p-4">
@@ -78,14 +106,18 @@ function SkillGapPage() {
                       <Badge variant="secondary">{p.estimated_weeks} weeks</Badge>
                     </div>
                     <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      {p.resources.map((r, j) => <li key={j}>• {r}</li>)}
+                      {p.resources.map((r, j) => (
+                        <li key={j}>• {r}</li>
+                      ))}
                     </ul>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            <Button variant="outline" onClick={() => m.mutate()}>Re-run analysis</Button>
+            <Button variant="outline" onClick={() => m.mutate()}>
+              Re-run analysis
+            </Button>
           </div>
         )}
       </div>

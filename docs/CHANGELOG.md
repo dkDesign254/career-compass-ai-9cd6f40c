@@ -13,12 +13,13 @@ questionnaire (44 responses), and prior chat history. Created the persistent
 `docs/PROJECT_AUDIT.md` so future sessions don't need to re-read chat.
 
 **Changes:**
+
 - Created `docs/PROJECT_AUDIT.md` (comprehensive status document) and this changelog.
 - Redrew all 10 Chapter 4 diagrams (architecture, use case, flowchart, class, DFD
   context/level1/level2, ERD, admin sequence, user sequence) as Mermaid source files
   in `docs/diagrams/*.mmd`, updated to reflect the actual built system (TanStack Start
-  + Supabase, not the paper's original Next.js + FastAPI description). Rendered each to
-  a transparent-background PNG at 3x scale in the same folder.
+  - Supabase, not the paper's original Next.js + FastAPI description). Rendered each to
+    a transparent-background PNG at 3x scale in the same folder.
 - Created 4 demo accounts covering student, graduate, recruiter, and company/employer
   roles (see PROJECT_AUDIT.md §6), with realistic linked profile/company/job data so
   each role has something to demo immediately after login.

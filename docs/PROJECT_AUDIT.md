@@ -37,34 +37,34 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
 
 ## 2. Functional requirements — status against Chapter 4.1.1
 
-| # | Requirement | Status | Notes |
-|---|---|---|---|
-| i | Register/login via email+password and Google | **Partial** | Email/password auth built. Google OAuth not yet configured (Supabase supports it; needs OAuth client credentials added in Supabase Auth settings). |
-| ii | Career profiles (education, skills, certifications, experience, interests) | **Done** | `career_profiles` table, full CRUD, seeded with 45 realistic profiles. |
-| iii | Resume upload (PDF/doc) | **Built, unverified live** | `resumes` table + storage bucket policies exist in schema. Not smoke-tested against the live Vercel deploy yet. |
-| iv | NLP resume extraction | **Partial** | Schema fields exist (`raw_text`, `parsed_data`, `ats_score`). Actual NLP/LLM call wiring depends on an AI provider key being set via the new `/admin/settings` page — not yet set, so this is not functionally live. |
-| v | Personalized career recommendations | **Partial** | Deterministic `scoreJob()` exists (title/skills/work-mode/salary/location match, no LLM cost). LLM-based *narrative* recommendations are not built. |
-| vi | Employability scoring | **Partial** | `EmployabilityScore`-equivalent fields exist in schema (`match_score` on applications). A dedicated, standalone employability score (independent of any single job) is **not built** — see Gap G1 below. |
-| vii | Skill-gap analysis | **Not built** | No dedicated skill-gap comparison feature yet. See Gap G1. |
-| viii | Personalized learning recommendations | **Not built** | No certifications/courses library exists yet. See Gap G2 (highest priority per survey data). |
-| ix | Internship/job recommendations | **Done** | Jobs feed, scoring, application tracking all live and seeded. |
-| x | ATS-optimized resume generation | **Not built** | `generated_documents` table exists in schema for this purpose but no generation logic wired up. |
-| xi | AI coaching chatbot | **Not built** | No chat interface exists. See Gap G3. |
-| xii | Admin dashboard (users, opportunities, analytics, content) | **Mostly done** | Users/Roles, Jobs, Job Sources, Blog/CMS, Subscriptions, Audit Log, and the new AI Provider Keys settings page all exist and are role-gated. Content editing is currently limited to blog posts — **not** yet full "edit every pixel of the frontend" per your latest ask. See Gap G4. |
+| #    | Requirement                                                                | Status                     | Notes                                                                                                                                                                                                                                                                                  |
+| ---- | -------------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| i    | Register/login via email+password and Google                               | **Partial**                | Email/password auth built. Google OAuth not yet configured (Supabase supports it; needs OAuth client credentials added in Supabase Auth settings).                                                                                                                                     |
+| ii   | Career profiles (education, skills, certifications, experience, interests) | **Done**                   | `career_profiles` table, full CRUD, seeded with 45 realistic profiles.                                                                                                                                                                                                                 |
+| iii  | Resume upload (PDF/doc)                                                    | **Built, unverified live** | `resumes` table + storage bucket policies exist in schema. Not smoke-tested against the live Vercel deploy yet.                                                                                                                                                                        |
+| iv   | NLP resume extraction                                                      | **Partial**                | Schema fields exist (`raw_text`, `parsed_data`, `ats_score`). Actual NLP/LLM call wiring depends on an AI provider key being set via the new `/admin/settings` page — not yet set, so this is not functionally live.                                                                   |
+| v    | Personalized career recommendations                                        | **Partial**                | Deterministic `scoreJob()` exists (title/skills/work-mode/salary/location match, no LLM cost). LLM-based _narrative_ recommendations are not built.                                                                                                                                    |
+| vi   | Employability scoring                                                      | **Partial**                | `EmployabilityScore`-equivalent fields exist in schema (`match_score` on applications). A dedicated, standalone employability score (independent of any single job) is **not built** — see Gap G1 below.                                                                               |
+| vii  | Skill-gap analysis                                                         | **Not built**              | No dedicated skill-gap comparison feature yet. See Gap G1.                                                                                                                                                                                                                             |
+| viii | Personalized learning recommendations                                      | **Not built**              | No certifications/courses library exists yet. See Gap G2 (highest priority per survey data).                                                                                                                                                                                           |
+| ix   | Internship/job recommendations                                             | **Done**                   | Jobs feed, scoring, application tracking all live and seeded.                                                                                                                                                                                                                          |
+| x    | ATS-optimized resume generation                                            | **Not built**              | `generated_documents` table exists in schema for this purpose but no generation logic wired up.                                                                                                                                                                                        |
+| xi   | AI coaching chatbot                                                        | **Not built**              | No chat interface exists. See Gap G3.                                                                                                                                                                                                                                                  |
+| xii  | Admin dashboard (users, opportunities, analytics, content)                 | **Mostly done**            | Users/Roles, Jobs, Job Sources, Blog/CMS, Subscriptions, Audit Log, and the new AI Provider Keys settings page all exist and are role-gated. Content editing is currently limited to blog posts — **not** yet full "edit every pixel of the frontend" per your latest ask. See Gap G4. |
 
 ## 3. Non-functional requirements — status
 
-| Requirement | Status |
-|---|---|
-| Response time <5s | Not load-tested |
-| Passwords encrypted | **Done** — bcrypt via Supabase Auth |
-| AuthN/AuthZ | **Done** — Supabase Auth + RLS + role-based checks on every admin server function |
-| Secure storage/transmission | **Done** — HTTPS via Vercel/Supabase, RLS on every table, Vault for API keys |
-| Simple/consistent UI | **Partial** — Handshake-style landing page and core app shell exist; no motion/animation layer yet (see Gap G5) |
+| Requirement                 | Status                                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Response time <5s           | Not load-tested                                                                                                                       |
+| Passwords encrypted         | **Done** — bcrypt via Supabase Auth                                                                                                   |
+| AuthN/AuthZ                 | **Done** — Supabase Auth + RLS + role-based checks on every admin server function                                                     |
+| Secure storage/transmission | **Done** — HTTPS via Vercel/Supabase, RLS on every table, Vault for API keys                                                          |
+| Simple/consistent UI        | **Partial** — Handshake-style landing page and core app shell exist; no motion/animation layer yet (see Gap G5)                       |
 | Responsive (desktop/mobile) | **Done** — Tailwind responsive classes used throughout; not yet manually tested on a real tablet/phone against the live Vercel deploy |
-| Reliability / backups | **Partial** — Supabase handles automated backups on paid tiers; not confirmed which tier CareerPilot AI is on |
-| Scalability | **Done by design** — Supabase + Vercel both scale horizontally without app changes |
-| Browser/OS compatibility | Not formally tested across browsers |
+| Reliability / backups       | **Partial** — Supabase handles automated backups on paid tiers; not confirmed which tier CareerPilot AI is on                         |
+| Scalability                 | **Done by design** — Supabase + Vercel both scale horizontally without app changes                                                    |
+| Browser/OS compatibility    | Not formally tested across browsers                                                                                                   |
 
 ---
 
@@ -141,13 +141,13 @@ matching survey demand: **G1 → G2 → G6 → G3 → G7 → G4 → G5.**
 
 All passwords: `Demo2026!CareerPilot` (rotate before any public demo)
 
-| Role | Email | Notes |
-|---|---|---|
-| Student | `demo.student@careerpilot-demo.io` | Final-year CS student, entry-level profile |
-| Graduate | `demo.graduate@careerpilot-demo.io` | Recent grad, Business Admin, one work history entry |
-| Recruiter | `demo.recruiter@careerpilot-demo.io` | Posts under Zamara Digital, owns 3 seeded jobs |
-| Company (employer) | `demo.company@careerpilot-demo.io` | `company_admin` role, owns Zamara Digital |
-| Super Admin | `admin.lucrebag@gmail.com` | `admin` + `cms_editor`, password `CareerPilot2026!Admin` |
+| Role               | Email                                | Notes                                                    |
+| ------------------ | ------------------------------------ | -------------------------------------------------------- |
+| Student            | `demo.student@careerpilot-demo.io`   | Final-year CS student, entry-level profile               |
+| Graduate           | `demo.graduate@careerpilot-demo.io`  | Recent grad, Business Admin, one work history entry      |
+| Recruiter          | `demo.recruiter@careerpilot-demo.io` | Posts under Zamara Digital, owns 3 seeded jobs           |
+| Company (employer) | `demo.company@careerpilot-demo.io`   | `company_admin` role, owns Zamara Digital                |
+| Super Admin        | `admin.lucrebag@gmail.com`           | `admin` + `cms_editor`, password `CareerPilot2026!Admin` |
 
 ## 7. Security posture summary
 

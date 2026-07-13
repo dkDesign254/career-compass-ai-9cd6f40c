@@ -37,7 +37,9 @@ function EmployabilityPage() {
             <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
               <Sparkles className="h-10 w-10 text-coral" />
               <p className="text-muted-foreground">Run AI analysis on your career profile.</p>
-              <Button onClick={() => m.mutate()} className="bg-brand hover:bg-brand/90">Run analysis</Button>
+              <Button onClick={() => m.mutate()} className="bg-brand hover:bg-brand/90">
+                Run analysis
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -60,19 +62,33 @@ function EmployabilityPage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
-              <CardContent><p className="leading-relaxed text-muted-foreground">{m.data.summary}</p></CardContent>
+              <CardHeader>
+                <CardTitle>Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="leading-relaxed text-muted-foreground">{m.data.summary}</p>
+              </CardContent>
             </Card>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <SectionCard title="Strengths"><ChipList items={m.data.strengths} variant="secondary" /></SectionCard>
-              <SectionCard title="Weaknesses"><ChipList items={m.data.weaknesses} variant="outline" /></SectionCard>
+              <SectionCard title="Strengths">
+                <ChipList items={m.data.strengths} variant="secondary" />
+              </SectionCard>
+              <SectionCard title="Weaknesses">
+                <ChipList items={m.data.weaknesses} variant="outline" />
+              </SectionCard>
               <SectionCard title="Next actions">
-                <ul className="space-y-2 text-sm">{m.data.next_actions.map((a, i) => <li key={i}>• {a}</li>)}</ul>
+                <ul className="space-y-2 text-sm">
+                  {m.data.next_actions.map((a, i) => (
+                    <li key={i}>• {a}</li>
+                  ))}
+                </ul>
               </SectionCard>
             </div>
 
-            <Button variant="outline" onClick={() => m.mutate()}>Re-run analysis</Button>
+            <Button variant="outline" onClick={() => m.mutate()}>
+              Re-run analysis
+            </Button>
           </div>
         )}
       </div>
@@ -80,12 +96,22 @@ function EmployabilityPage() {
   );
 }
 
-export function Header({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+export function Header({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
         <div className="mb-2 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand/10 to-coral/20 text-coral">{icon}</div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand/10 to-coral/20 text-coral">
+            {icon}
+          </div>
           <h1 className="font-display text-2xl font-bold">{title}</h1>
         </div>
         <p className="text-muted-foreground">{desc}</p>

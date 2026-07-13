@@ -14,12 +14,20 @@ function applyTheme(theme: Theme): "light" | "dark" {
   return resolved;
 }
 
-export function ThemeProvider({ children, defaultTheme = "system" }: { children: ReactNode; defaultTheme?: Theme }) {
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+}: {
+  children: ReactNode;
+  defaultTheme?: Theme;
+}) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const saved = (typeof window !== "undefined" && (localStorage.getItem(STORAGE_KEY) as Theme | null)) || defaultTheme;
+    const saved =
+      (typeof window !== "undefined" && (localStorage.getItem(STORAGE_KEY) as Theme | null)) ||
+      defaultTheme;
     setThemeState(saved);
     setResolved(applyTheme(saved));
     const mq = window.matchMedia("(prefers-color-scheme: dark)");

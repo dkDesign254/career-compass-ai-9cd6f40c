@@ -23,16 +23,25 @@ function UsersPage() {
   const grantFn = useServerFn(grantRole);
   const revokeFn = useServerFn(revokeRole);
   const qc = useQueryClient();
-  const { data: users, isLoading } = useQuery({ queryKey: ["admin-users", q], queryFn: () => listFn({ data: { q } }) });
+  const { data: users, isLoading } = useQuery({
+    queryKey: ["admin-users", q],
+    queryFn: () => listFn({ data: { q } }),
+  });
 
   const grant = useMutation({
     mutationFn: (v: { user_id: string; role: any }) => grantFn({ data: v }),
-    onSuccess: () => { toast.success("Role granted"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: () => {
+      toast.success("Role granted");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
   const revoke = useMutation({
     mutationFn: (v: { user_id: string; role: any }) => revokeFn({ data: v }),
-    onSuccess: () => { toast.success("Role revoked"); qc.invalidateQueries({ queryKey: ["admin-users"] }); },
+    onSuccess: () => {
+      toast.success("Role revoked");
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -40,8 +49,15 @@ function UsersPage() {
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-4">
         <h1 className="font-display text-2xl font-bold">Users & Roles</h1>
-        <Input placeholder="Search by name" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
-        {isLoading ? <p>Loading…</p> : (
+        <Input
+          placeholder="Search by name"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-sm"
+        />
+        {isLoading ? (
+          <p>Loading…</p>
+        ) : (
           <div className="grid gap-3">
             {(users ?? []).map((u: any) => (
               <Card key={u.id}>
@@ -53,14 +69,27 @@ function UsersPage() {
                       {(u.roles ?? []).map((r: string) => (
                         <Badge key={r} variant="secondary" className="gap-1">
                           {r}
-                          <button className="ml-1 text-destructive" title="Revoke" onClick={() => revoke.mutate({ user_id: u.id, role: r })}>×</button>
+                          <button
+                            className="ml-1 text-destructive"
+                            title="Revoke"
+                            onClick={() => revoke.mutate({ user_id: u.id, role: r })}
+                          >
+                            ×
+                          </button>
                         </Badge>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {ROLES.filter((r) => !(u.roles ?? []).includes(r)).map((r) => (
-                      <Button key={r} size="sm" variant="outline" onClick={() => grant.mutate({ user_id: u.id, role: r })}>+ {r}</Button>
+                      <Button
+                        key={r}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => grant.mutate({ user_id: u.id, role: r })}
+                      >
+                        + {r}
+                      </Button>
                     ))}
                   </div>
                 </CardContent>
