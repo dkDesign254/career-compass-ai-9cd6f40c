@@ -105,3 +105,26 @@ recurring 12-hour scraping cron (needs a Firecrawl key, which hasn't been added 
 Gemini has), the country/language selector with Google Translate, and verifying the
 recruiter/company dashboard's "shortlisted candidates" and "my posted jobs" views
 actually exist in the UI as built.
+
+---
+
+## 2026-07-13 (continued) — Country/language selector, corrected G10 status
+
+**Verified G10 (recruiter dashboard) was already built**, not a gap: `recruiter.tsx`
+(posted jobs list), `recruiter.applicants.$jobId.tsx` (shortlist/proceed/reject +
+templated messages), `recruiter.new-job.tsx` (post a job). Corrected the audit rather
+than leaving a stale gap entry.
+
+**Built G9 — country/language selector:**
+- `src/lib/geo.functions.ts`: server function reading Vercel's automatic
+  `x-vercel-ip-country`/`x-vercel-ip-city` headers — zero-config, no geo-IP API key
+  needed, only works in Vercel's production environment (not locally).
+- `src/components/region-language-switcher.tsx`: country dropdown (10 African +
+  Western markets) with localStorage persistence, language dropdown driving Google's
+  official Website Translator widget loaded globally, `notranslate` class applied to
+  the switcher UI itself so it doesn't get caught in its own translation.
+- Wired into both the public landing nav and the authenticated `AppShell` header.
+
+**Not yet verified:** the geo-detection can only be confirmed against the live Vercel
+deployment (the header doesn't exist locally) — check that the detected country looks
+right once this deploys.

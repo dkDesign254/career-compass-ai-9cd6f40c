@@ -13,6 +13,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getMyRoles } from "@/lib/jobs.functions";
+import { RegionLanguageSwitcher } from "@/components/region-language-switcher";
 
 const baseNav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -111,6 +112,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
           </Button>
           <div className="flex-1" />
           <div className="flex items-center gap-1">
+            <RegionLanguageSwitcher className="hidden sm:flex" />
             <HelpButton />
             <Button variant="ghost" size="icon" aria-label="Notifications">
               <Bell className="h-4 w-4" />

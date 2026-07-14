@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
+import { RegionLanguageSwitcher } from "@/components/region-language-switcher";
 import { ArrowRight, MapPin, Compass, Search, Star, TrendingUp, Users, Sparkles, Building2, Linkedin, Instagram, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,7 @@ function Landing() {
             <Link to="/auth" className="transition-colors hover:text-accent">Sign in</Link>
           </nav>
           <div className="flex items-center gap-2">
+            <RegionLanguageSwitcher className="hidden lg:flex" />
             <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex"><Link to="/auth">Log in</Link></Button>
             <Button asChild size="sm" className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent/90"><Link to="/auth">Sign up free</Link></Button>
           </div>

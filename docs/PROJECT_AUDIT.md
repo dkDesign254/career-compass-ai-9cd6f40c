@@ -165,14 +165,21 @@ added Gemini so far), and `scrape.server.ts` currently reads `process.env.FIRECR
 directly rather than through the new Vault-backed `ai_provider_keys` system — these two
 need to be wired together, then a `pg_cron` schedule added to trigger it every 12 hours.
 
-**G9 — Country/language selector with geo-detection and Google Translate.** Not built.
-Requested: auto-detect country from device location, manual override, and a full-page
-Google Translate integration.
+**G9 — Country/language selector with geo-detection and Google Translate.** **Built.**
+`src/lib/geo.functions.ts` reads Vercel's automatic `x-vercel-ip-country` header (free,
+no external geo-IP service or API key needed) to suggest a default country; user can
+override via dropdown, persisted in localStorage. Language switcher drives Google's
+official Website Translator widget (loaded globally, `notranslate` applied to the
+switcher itself so it doesn't translate its own UI). Added to both the public landing
+nav and the authenticated app header. Not yet tested against the live Vercel deploy —
+the geo header only exists in Vercel's production environment, so it can't be verified
+locally; confirm the detected country looks right after this deploys.
 
-**G10 — Recruiter/company dashboard depth.** Recruiter and company_admin roles exist
-and demo accounts are linked to real posted jobs, but a dedicated "shortlisted
-candidates" view and a "jobs I've posted" management view are not confirmed built out
-in the UI — needs verification against the live app and likely some UI work.
+**G10 — Recruiter/company dashboard depth.** ~~Not confirmed built~~ **Verified built.**
+Checked `recruiter.tsx` (my posted jobs list), `recruiter.applicants.$jobId.tsx`
+(per-job applicant list with shortlist/proceed/reject decisions and templated
+messages to candidates), `recruiter.new-job.tsx` (post a job). This gap was closed
+already; corrected here rather than silently dropped.
 
 None of G8–G10 were attempted blind this session, given remaining time in the session
 and that G8 needs a key you haven't added yet, G9 is a clean standalone feature, and
