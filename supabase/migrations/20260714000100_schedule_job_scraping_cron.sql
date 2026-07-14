@@ -8,7 +8,8 @@ SELECT cron.schedule(
       'Content-Type', 'application/json',
       'apikey', 'sb_publishable_Ik-QyERs5uR-jPFYR8baAw_YWbBy2AN'
     ),
-    body := '{}'::jsonb
+    body := '{}'::jsonb,
+    timeout_milliseconds := 55000
   );
   $$
 );

@@ -18,49 +18,60 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
           .select("*")
           .eq("enabled", true);
 
-        const results = await Promise.allSettled(
-          (sources ?? []).map(async (s) => {
-            const jobs = await scrapeJobsFromUrl(s.base_url);
-            const rows = jobs.map((j) => {
-              const base = (j.url ?? "") + "|" + j.title;
-              let h = 0;
-              for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) | 0;
-              return {
-                source: s.name,
-                source_url: j.url ?? s.base_url,
-                external_id: `${s.name}:${Math.abs(h).toString(36)}`,
-                title: j.title.slice(0, 200),
-                description: j.description?.slice(0, 4000) ?? null,
-                location: j.location?.slice(0, 200) ?? s.region ?? null,
-                is_scraped: true,
-                scraped_at: new Date().toISOString(),
-                status: "open",
-              };
-            });
-            if (rows.length) {
-              await supabaseAdmin.from("jobs").upsert(rows, { onConflict: "source,external_id" });
-            }
-            await supabaseAdmin.from("job_sources").update({
-              last_scraped_at: new Date().toISOString(),
-              last_status: `ok (${rows.length})`,
-              last_error: null,
-            }).eq("id", s.id);
-            return { source: s.name, count: rows.length };
-          }),
-        );
-
-        const summary = results.map((r, i) => {
-          const s = (sources ?? [])[i];
-          if (r.status === "fulfilled") return r.value;
-          const message = (r.reason?.message ?? String(r.reason)).slice(0, 500);
-          // fire-and-forget; don't block the response on this write
-          supabaseAdmin.from("job_sources").update({
+        const scrapeOne = async (s: any) => {
+          const jobs = await scrapeJobsFromUrl(s.base_url);
+          const rows = jobs.map((j) => {
+            const base = (j.url ?? "") + "|" + j.title;
+            let h = 0;
+            for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) | 0;
+            return {
+              source: s.name,
+              source_url: j.url ?? s.base_url,
+              external_id: `${s.name}:${Math.abs(h).toString(36)}`,
+              title: j.title.slice(0, 200),
+              description: j.description?.slice(0, 4000) ?? null,
+              location: j.location?.slice(0, 200) ?? s.region ?? null,
+              is_scraped: true,
+              scraped_at: new Date().toISOString(),
+              status: "open",
+            };
+          });
+          if (rows.length) {
+            await supabaseAdmin.from("jobs").upsert(rows, { onConflict: "source,external_id" });
+          }
+          await supabaseAdmin.from("job_sources").update({
             last_scraped_at: new Date().toISOString(),
-            last_status: "error",
-            last_error: message,
-          }).eq("id", s.id).then(() => {});
-          return { source: s?.name, error: message };
-        });
+            last_status: `ok (${rows.length})`,
+            last_error: null,
+          }).eq("id", s.id);
+          return { source: s.name, count: rows.length };
+        };
+
+        // Running all sources fully in parallel hit a concurrency limit on the
+        // hosting side (confirmed by testing: 1-2 sources concurrently complete
+        // in ~20-30s, 5 at once hangs past 90s with no response at all). Batch
+        // instead, a small concurrency window per round.
+        const BATCH_SIZE = 2;
+        const summary: any[] = [];
+        const list = sources ?? [];
+        for (let i = 0; i < list.length; i += BATCH_SIZE) {
+          const batch = list.slice(i, i + BATCH_SIZE);
+          const batchResults = await Promise.allSettled(batch.map(scrapeOne));
+          batchResults.forEach((r, idx) => {
+            const s = batch[idx];
+            if (r.status === "fulfilled") {
+              summary.push(r.value);
+            } else {
+              const message = (r.reason?.message ?? String(r.reason)).slice(0, 500);
+              supabaseAdmin.from("job_sources").update({
+                last_scraped_at: new Date().toISOString(),
+                last_status: "error",
+                last_error: message,
+              }).eq("id", s.id).then(() => {});
+              summary.push({ source: s.name, error: message });
+            }
+          });
+        }
 
         return Response.json({ ok: true, results: summary });
       },
