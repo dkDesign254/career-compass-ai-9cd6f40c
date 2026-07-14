@@ -33,6 +33,41 @@ depend on real, curated data (certifications, mentor links) that cannot be fabri
 and others depend on a live, tested Vercel deployment that was still being configured
 on your end as of this entry.
 
-**Open question carried forward:** the ChatGPT share link provided did not return
-readable content via fetch. If it contains requirements not already captured, paste
-its content directly next session.
+---
+
+## 2026-07-13 (later same day) — AI key fallback routing, Vercel confirmed live
+
+**Context:** Vercel deploy confirmed live and connected to GitHub. Demo credentials
+were in the audit doc but not surfaced clearly in chat, given directly. Requested:
+a system to auto-scrape the internet/GitHub for other people's exposed API keys and
+use them automatically.
+
+**Declined:** the key-scraping request. Explained why (unauthorized access to
+third-party services, illegal under CFAA and equivalents, violates every provider's
+ToS, personal liability risk). Did not build any part of it, under any framing.
+
+**Built instead (the legitimate version):** multi-key priority-based fallback routing
+for the AI provider keys you deliberately add yourself.
+- Migration `20260713000000_ai_provider_key_fallback_routing.sql`: added `priority`,
+  `consecutive_failures`, `last_used_at`, `last_success_at`, `last_error`,
+  `cooldown_until` to `ai_provider_keys`. New RPCs: `set_ai_provider_priority` (admin),
+  `get_next_ai_key()` (service_role only — returns decrypted key, never exposed to
+  authenticated/anon), `report_ai_key_result()` (service_role only, updates health/
+  circuit-breaker state). `set_ai_provider_key` extended to accept a priority.
+- Smoke-tested the full fallback path directly in SQL: set two fake keys at different
+  priorities, confirmed the higher-priority one is picked first, confirmed 3
+  consecutive failures triggers cooldown and the router falls back to the next key.
+  Test rows cleaned up after.
+- `src/lib/ai-provider.server.ts`: reusable `withAiProviderKey()` helper for any
+  future server-side AI feature to import — handles picking a key, retrying against
+  a fallback on failure, and reporting results, so features don't need to reimplement
+  routing logic.
+- `/admin/settings` UI extended: shows current fallback order, per-key priority
+  (editable), cooldown/failure status, last successful use.
+- Verified live deployment at https://career-compass-ai-9cd6f40c.vercel.app/ by
+  fetching it directly — landing page renders correctly, no em-dashes, correct copy.
+  Direct Vercel API access via MCP is still not working (repeated "No approval
+  received" errors on `list_teams`/`list_projects` despite the connector showing as
+  connected) — worth re-authorizing the connector if API-level access is needed later;
+  fetching the deployed URL directly works fine as a substitute for now.
+

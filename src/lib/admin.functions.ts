@@ -234,8 +234,8 @@ export const listAiProviderKeys = createServerFn({ method: "GET" })
     const { supabase } = context as any;
     const { data, error } = await supabase
       .from("ai_provider_keys")
-      .select("provider, label, key_preview, is_active, updated_at")
-      .order("provider", { ascending: true });
+      .select("provider, label, key_preview, is_active, priority, consecutive_failures, last_used_at, last_success_at, last_error, cooldown_until, updated_at")
+      .order("priority", { ascending: true });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -244,6 +244,7 @@ const SetAiProviderKeySchema = z.object({
   provider: z.string().min(2).max(60),
   label: z.string().max(120).optional(),
   key_value: z.string().min(6).max(4000),
+  priority: z.number().int().min(1).max(1000).default(100),
 });
 
 export const setAiProviderKey = createServerFn({ method: "POST" })
@@ -256,7 +257,19 @@ export const setAiProviderKey = createServerFn({ method: "POST" })
       _provider: data.provider,
       _label: data.label ?? null,
       _key_value: data.key_value,
+      _priority: data.priority,
     });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const setAiProviderPriority = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ provider: z.string().min(2).max(60), priority: z.number().int().min(1).max(1000) }).parse(i))
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context);
+    const { supabase } = context as any;
+    const { error } = await supabase.rpc("set_ai_provider_priority", { _provider: data.provider, _priority: data.priority });
     if (error) throw new Error(error.message);
     return { ok: true };
   });

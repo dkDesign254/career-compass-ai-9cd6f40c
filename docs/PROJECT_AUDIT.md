@@ -86,15 +86,23 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
   - Outstanding, not fixable from code: `pg_net` extension schema (Supabase-managed,
     platform blocks the move), leaked-password-protection toggle (manual dashboard
     setting, not SQL)
-- **AI provider key management**: real, working, Vault-backed (not plaintext) key
-  storage with admin-only RPCs, plus a UI at `/admin/settings`. Smoke-tested end to end.
+- **AI provider key management with automatic fallback routing**: Vault-backed
+  (not plaintext) storage for multiple keys per provider, admin sets a priority per
+  key at `/admin/settings`. A reusable server-side helper (`src/lib/ai-provider.server.ts`,
+  `withAiProviderKey()`) picks the highest-priority active key, automatically falls
+  back to the next one if a call fails, and trips a 15-minute cooldown on a key after
+  3 consecutive failures. Smoke-tested end to end including the fallback path. Not yet
+  consumed by any actual AI feature (none exist yet — see G1/G3), but ready to be
+  imported the moment one is built. Explicitly does **not** and will not source keys
+  from anywhere other than what an admin deliberately enters — scraping the internet
+  or public repos for other people's exposed keys was requested and declined as
+  unauthorized access to third-party services.
 - **GitHub ↔ Supabase sync**: repo migrations and live database match exactly.
 - **Landing page**: Handshake-style layout, no em-dashes, no AI-typical phrasing,
   Fraunces/Inter typography actually loading (was silently falling back before).
-- **Vercel deploy path**: configured (`nitro: { preset: "vercel" }` set explicitly),
-  but **not yet confirmed live** — you were mid-setup on the Vercel dashboard side
-  (framework preset, env vars) when this audit was written. Confirm and report back
-  any build errors.
+- **Vercel deploy**: **confirmed live** at https://career-compass-ai-9cd6f40c.vercel.app/,
+  landing page verified rendering correctly (fetched and inspected directly). Auto-deploys
+  on every push to `main` since Vercel is connected to the GitHub repo.
 
 ## 5. Known gaps, prioritized by survey demand (§1)
 
