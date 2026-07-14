@@ -6,7 +6,7 @@
 
 /*
  * CareerPilot AI design system.
- * Brand: deep navy + warm coral accent + electric teal highlight.
+ * Brand: deep navy ink + a single vivid indigo accent (no orange).
  * Typography: Fraunces (display) + Inter (body).
  * All colors MUST use oklch.
  */
@@ -61,9 +61,9 @@
 }
 
 :root {
-  /* Handshake-inspired palette, tuned warmer for African audiences.
-     Ivory canvas, deep ink text, Handshake orange as accent,
-     midnight navy as headings/brand, mint/sage surfaces. */
+  /* Clean, single-accent palette: ivory canvas, deep ink text/brand,
+     one vivid indigo accent used sparingly (buttons, links, highlights).
+     No orange anywhere. */
   --radius: 0.625rem;
   --background: oklch(0.985 0.005 85);       /* ivory */
   --foreground: oklch(0.17 0.02 250);        /* deep navy ink */
@@ -71,25 +71,25 @@
   --card-foreground: oklch(0.17 0.02 250);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.17 0.02 250);
-  --primary: oklch(0.22 0.06 258);           /* Handshake midnight #1A2A4A */
+  --primary: oklch(0.22 0.06 258);           /* deep navy ink */
   --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.955 0.02 155);        /* mint surface */
-  --secondary-foreground: oklch(0.24 0.03 175);
+  --secondary: oklch(0.955 0.01 270);        /* soft indigo-tinted surface */
+  --secondary-foreground: oklch(0.26 0.05 270);
   --muted: oklch(0.96 0.006 85);
   --muted-foreground: oklch(0.44 0.02 250);
-  --accent: oklch(0.72 0.18 42);             /* Handshake orange */
+  --accent: oklch(0.56 0.19 275);            /* vivid indigo — the one accent color */
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.9 0.008 85);
   --input: oklch(0.92 0.008 85);
-  --ring: oklch(0.72 0.18 42);
+  --ring: oklch(0.56 0.19 275);
   --brand: oklch(0.22 0.06 258);             /* navy brand */
   --brand-foreground: oklch(0.985 0.005 85);
-  --coral: oklch(0.72 0.18 42);              /* orange accent */
+  --coral: oklch(0.56 0.19 275);              /* legacy var name, now indigo */
   --teal: oklch(0.55 0.13 195);              /* teal highlight */
   --chart-1: oklch(0.22 0.06 258);
-  --chart-2: oklch(0.72 0.18 42);
+  --chart-2: oklch(0.56 0.19 275);
   --chart-3: oklch(0.6 0.13 165);
   --chart-4: oklch(0.72 0.14 85);
   --chart-5: oklch(0.55 0.14 305);
@@ -97,10 +97,10 @@
   --sidebar-foreground: oklch(0.17 0.02 250);
   --sidebar-primary: oklch(0.22 0.06 258);
   --sidebar-primary-foreground: oklch(0.985 0.005 85);
-  --sidebar-accent: oklch(0.955 0.02 155);
+  --sidebar-accent: oklch(0.955 0.01 270);
   --sidebar-accent-foreground: oklch(0.22 0.06 258);
   --sidebar-border: oklch(0.9 0.008 85);
-  --sidebar-ring: oklch(0.72 0.18 42);
+  --sidebar-ring: oklch(0.56 0.19 275);
 }
 
 .dark {
@@ -112,34 +112,34 @@
   --popover-foreground: oklch(0.96 0.006 85);
   --primary: oklch(0.65 0.15 250);
   --primary-foreground: oklch(0.14 0.005 60);
-  --secondary: oklch(0.25 0.02 155);
+  --secondary: oklch(0.25 0.03 270);
   --secondary-foreground: oklch(0.96 0.006 85);
   --muted: oklch(0.24 0.005 60);
   --muted-foreground: oklch(0.72 0.008 85);
-  --accent: oklch(0.72 0.17 42);
-  --accent-foreground: oklch(0.14 0.005 60);
+  --accent: oklch(0.62 0.19 275);
+  --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.62 0.22 27);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.72 0.17 42);
+  --ring: oklch(0.62 0.19 275);
   --brand: oklch(0.96 0.006 85);
   --brand-foreground: oklch(0.14 0.005 60);
-  --coral: oklch(0.72 0.17 42);
+  --coral: oklch(0.62 0.19 275);
   --teal: oklch(0.65 0.15 250);
   --chart-1: oklch(0.65 0.15 250);
-  --chart-2: oklch(0.72 0.17 42);
+  --chart-2: oklch(0.62 0.19 275);
   --chart-3: oklch(0.68 0.13 165);
   --chart-4: oklch(0.78 0.14 85);
   --chart-5: oklch(0.65 0.14 305);
   --sidebar: oklch(0.11 0.005 60);
   --sidebar-foreground: oklch(0.96 0.006 85);
-  --sidebar-primary: oklch(0.72 0.17 42);
+  --sidebar-primary: oklch(0.62 0.19 275);
   --sidebar-primary-foreground: oklch(0.14 0.005 60);
   --sidebar-accent: oklch(0.19 0.005 60);
   --sidebar-accent-foreground: oklch(0.96 0.006 85);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.72 0.17 42);
+  --sidebar-ring: oklch(0.62 0.19 275);
 }
 
 @layer base {

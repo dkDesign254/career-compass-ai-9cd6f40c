@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, MapPin, Compass, Search, Star, TrendingUp, Users, Sparkles, Building2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, MapPin, Compass, Search, Star, TrendingUp, Users, Sparkles, Building2, Linkedin, Instagram, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ const CATEGORIES = [
   { label: "Finance & Ops", image: catFinance, count: "610+ roles", tint: "bg-mint" },
 ] as const;
 
-const EMPLOYERS = ["Safaricom", "M-KOPA", "Andela", "Flutterwave", "Twiga", "Kenya Airways", "Cellulant", "Jumia"] as const;
+const EMPLOYERS = ["Safaricom", "M-KOPA", "Copia", "Andela", "Flutterwave", "Twiga Foods", "Kenya Airways", "Cellulant", "Jumia", "The Lucrebag"] as const;
 
 const TESTIMONIALS = [
   { name: "Kwame O.", role: "Software Engineer · Andela", quote: "The ATS score alone got my resume through three companies that had rejected me before. Landed my first remote role in six weeks.", img: t2 },
@@ -144,12 +145,23 @@ function Landing() {
             Trusted by teams hiring across Africa
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-            {EMPLOYERS.map((e) => (
-              <span key={e} className="font-display text-lg font-semibold tracking-tight text-foreground/40 transition-colors hover:text-foreground/70">
+            {EMPLOYERS.map((e, i) => (
+              <motion.span
+                key={e}
+                initial={{ opacity: 0, y: 6 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
+                whileHover={{ scale: 1.06 }}
+                className="cursor-default font-display text-lg font-semibold tracking-tight text-foreground/40 transition-colors hover:text-accent"
+              >
                 {e}
-              </span>
+              </motion.span>
             ))}
           </div>
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            Job listings sourced live from BrighterMonday, Fuzu, MyJobMag, RemoteOK, and We Work Remotely — refreshed every 12 hours.
+          </p>
         </div>
       </section>
 
@@ -165,14 +177,17 @@ function Landing() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {CATEGORIES.map((c) => (
-              <Link key={c.label} to="/auth" className="group relative block overflow-hidden rounded-2xl border border-border/60 ring-soft transition-transform hover:-translate-y-1">
+              <Link key={c.label} to="/auth" className="group relative block overflow-hidden rounded-2xl border border-border/60 ring-soft transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-xl">
                 <div className={`aspect-[4/5] w-full ${c.tint}`}>
-                  <img src={c.image} alt={c.label} loading="lazy" width={900} height={700} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img src={c.image} alt={c.label} loading="lazy" width={900} height={700} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/30 to-transparent transition-opacity duration-300 group-hover:from-accent/95" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-accent">{c.count}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-accent transition-colors group-hover:text-white">{c.count}</p>
                   <h3 className="mt-1 font-display text-2xl font-semibold text-white">{c.label}</h3>
+                  <p className="mt-2 max-h-0 overflow-hidden text-sm text-white/85 opacity-0 transition-all duration-300 group-hover:mt-2 group-hover:max-h-12 group-hover:opacity-100">
+                    See your roadmap: skills to build, roles to target, next steps →
+                  </p>
                 </div>
               </Link>
             ))}
@@ -289,14 +304,33 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-border/60 py-12">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 md:grid-cols-4">
-          <div>
+      <footer className="border-t border-border/60 py-14">
+        <div className="mx-auto grid max-w-7xl gap-8 px-5 md:grid-cols-5">
+          <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2 font-semibold">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Compass className="h-4 w-4" /></span>
               <span className="font-display text-lg">CareerPilot</span>
             </Link>
-            <p className="mt-3 text-sm text-muted-foreground">Where Africa's next generation launches their career.</p>
+            <p className="mt-3 max-w-xs text-sm text-muted-foreground">Where Africa's next generation launches their career.</p>
+            <div className="mt-5 flex items-center gap-3">
+              {[
+                { Icon: Linkedin, href: "https://www.linkedin.com/company/the-lucrebag", label: "LinkedIn" },
+                { Icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+                { Icon: Globe, href: "https://lucrebag.com", label: "Website" },
+              ].map(({ Icon, href, label }) => (
+                <motion.a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  whileHover={{ scale: 1.12, y: -2 }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-accent hover:text-accent"
+                >
+                  <Icon className="h-4 w-4" />
+                </motion.a>
+              ))}
+            </div>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">Students</p>
@@ -304,6 +338,7 @@ function Landing() {
               <li><Link to="/auth" className="hover:text-accent">Sign up free</Link></li>
               <li><a href="#jobs" className="hover:text-accent">Browse jobs</a></li>
               <li><a href="#pillars" className="hover:text-accent">Resume review</a></li>
+              <li><a href="#categories" className="hover:text-accent">Explore fields</a></li>
             </ul>
           </div>
           <div>
@@ -318,6 +353,7 @@ function Landing() {
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><a href="#pillars" className="hover:text-accent">About</a></li>
               <li><Link to="/auth" className="hover:text-accent">Sign in</Link></li>
+              <li><a href="https://lucrebag.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent">The Lucrebag</a></li>
             </ul>
           </div>
         </div>
