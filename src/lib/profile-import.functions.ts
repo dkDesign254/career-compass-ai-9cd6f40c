@@ -78,7 +78,7 @@ export const previewProfileImport = createServerFn({ method: "POST" })
 
     // LinkedIn + generic → Firecrawl scrape + AI structure.
     const { getFirecrawl } = await import("./scrape.server");
-    const fc = getFirecrawl();
+    const fc = await getFirecrawl();
     let markdown = "";
     try {
       const res: any = await fc.scrape(data.url, { formats: ["markdown"], onlyMainContent: true } as any);

@@ -1,9 +1,13 @@
 // Server-only Firecrawl helper. Never import from client code.
 import Firecrawl from "@mendable/firecrawl-js";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export function getFirecrawl() {
-  const apiKey = process.env.FIRECRAWL_API_KEY;
-  if (!apiKey) throw new Error("FIRECRAWL_API_KEY is not configured. Link the Firecrawl connector.");
+export async function getFirecrawl() {
+  // Prefer the key set at /admin/settings (Vault-backed), fall back to an
+  // env var for local dev if someone sets one directly.
+  const { data, error } = await supabaseAdmin.rpc("get_provider_key", { _provider: "firecrawl" });
+  const apiKey = (!error && data) ? data : process.env.FIRECRAWL_API_KEY;
+  if (!apiKey) throw new Error("No Firecrawl key configured. Add one at /admin/settings.");
   return new Firecrawl({ apiKey });
 }
 
@@ -47,14 +51,22 @@ const jobsSchema = {
 } as const;
 
 export async function scrapeJobsFromUrl(url: string): Promise<ScrapedJob[]> {
-  const fc = getFirecrawl();
-  const res: any = await fc.scrape(url, {
-    formats: [{ type: "json", schema: jobsSchema, prompt: EXTRACTION_PROMPT } as any],
-    onlyMainContent: true,
-  } as any);
-  const json = res?.json ?? res?.data?.json ?? {};
-  const jobs: ScrapedJob[] = Array.isArray(json.jobs) ? json.jobs : [];
-  return jobs
-    .filter((j) => j && typeof j.title === "string" && j.title.trim().length > 2)
-    .slice(0, 40);
+  const fc = await getFirecrawl();
+  try {
+    const res: any = await fc.scrape(url, {
+      formats: [{ type: "json", schema: jobsSchema, prompt: EXTRACTION_PROMPT } as any],
+      onlyMainContent: true,
+    } as any);
+    await supabaseAdmin.rpc("report_ai_key_result", { _provider: "firecrawl", _success: true });
+    const json = res?.json ?? res?.data?.json ?? {};
+    const jobs: ScrapedJob[] = Array.isArray(json.jobs) ? json.jobs : [];
+    return jobs
+      .filter((j) => j && typeof j.title === "string" && j.title.trim().length > 2)
+      .slice(0, 40);
+  } catch (e: any) {
+    await supabaseAdmin.rpc("report_ai_key_result", {
+      _provider: "firecrawl", _success: false, _error_message: (e?.message ?? String(e)).slice(0, 500),
+    });
+    throw e;
+  }
 }
