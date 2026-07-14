@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/public/hooks/scrape-jobs": {
+      "maxDuration": 60
+    }
+  }
+}

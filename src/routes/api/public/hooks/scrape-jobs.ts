@@ -17,9 +17,9 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
           .from("job_sources")
           .select("*")
           .eq("enabled", true);
-        const results: any[] = [];
-        for (const s of sources ?? []) {
-          try {
+
+        const results = await Promise.allSettled(
+          (sources ?? []).map(async (s) => {
             const jobs = await scrapeJobsFromUrl(s.base_url);
             const rows = jobs.map((j) => {
               const base = (j.url ?? "") + "|" + j.title;
@@ -45,17 +45,24 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
               last_status: `ok (${rows.length})`,
               last_error: null,
             }).eq("id", s.id);
-            results.push({ source: s.name, count: rows.length });
-          } catch (e: any) {
-            await supabaseAdmin.from("job_sources").update({
-              last_scraped_at: new Date().toISOString(),
-              last_status: "error",
-              last_error: (e?.message ?? String(e)).slice(0, 500),
-            }).eq("id", s.id);
-            results.push({ source: s.name, error: e?.message ?? String(e) });
-          }
-        }
-        return Response.json({ ok: true, results });
+            return { source: s.name, count: rows.length };
+          }),
+        );
+
+        const summary = results.map((r, i) => {
+          const s = (sources ?? [])[i];
+          if (r.status === "fulfilled") return r.value;
+          const message = (r.reason?.message ?? String(r.reason)).slice(0, 500);
+          // fire-and-forget; don't block the response on this write
+          supabaseAdmin.from("job_sources").update({
+            last_scraped_at: new Date().toISOString(),
+            last_status: "error",
+            last_error: message,
+          }).eq("id", s.id).then(() => {});
+          return { source: s?.name, error: message };
+        });
+
+        return Response.json({ ok: true, results: summary });
       },
     },
   },
