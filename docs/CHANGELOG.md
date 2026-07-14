@@ -71,3 +71,37 @@ for the AI provider keys you deliberately add yourself.
   connected) — worth re-authorizing the connector if API-level access is needed later;
   fetching the deployed URL directly works fine as a substitute for now.
 
+
+---
+
+## 2026-07-13 (later still) — Replaced fabricated jobs with real ones, fixed color scheme
+
+**Context:** Flagged, correctly, that the seeded jobs were fabricated and that the
+navy+orange color scheme (mislabeled "Handshake-inspired" in the original CSS comment)
+didn't match Handshake's actual current branding. Also requested: country/language
+selector, richer footer, real company logos in the trust bar, motion/interactivity,
+and continued 12-hour scraping.
+
+**Real job data:** deleted all 52 fabricated jobs and 22 fabricated companies. Pulled
+20 real, currently-live listings via direct web search against BrighterMonday Kenya,
+Fuzu Kenya, and RemoteOK — real companies, real source URLs, paraphrased (not copied)
+descriptions per copyright rules. Reseeded 114 applications against the real job set.
+Demo recruiter/company accounts relinked to real jobs/companies (The Lucrebag).
+
+**Design:** removed the orange accent entirely, replaced with navy + one vivid indigo
+accent (`oklch(0.56 0.19 275)`), light and dark mode. Added Framer Motion to the trust
+bar (staggered entrance, hover scale) and category cards (hover-reveal purpose copy).
+Footer rebuilt: 5 columns, real LinkedIn/Instagram icons with hover motion, added The
+Lucrebag as a company link.
+
+**Declined a specific request, again:** did not embed actual trademarked logo artwork
+for Safaricom/Jumia/etc. in the trust bar. Used clean typographic wordmarks instead,
+standard practice without a formal logo-usage agreement with each company. This is a
+design choice, not a technical limitation — revisit if you get explicit permission or
+have official brand-kit assets to use.
+
+**Explicitly not done this session** (see PROJECT_AUDIT.md §5, gaps G8–G10): the
+recurring 12-hour scraping cron (needs a Firecrawl key, which hasn't been added — only
+Gemini has), the country/language selector with Google Translate, and verifying the
+recruiter/company dashboard's "shortlisted candidates" and "my posted jobs" views
+actually exist in the UI as built.

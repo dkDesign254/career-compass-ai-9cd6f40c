@@ -98,8 +98,21 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
   or public repos for other people's exposed keys was requested and declined as
   unauthorized access to third-party services.
 - **GitHub ↔ Supabase sync**: repo migrations and live database match exactly.
-- **Landing page**: Handshake-style layout, no em-dashes, no AI-typical phrasing,
-  Fraunces/Inter typography actually loading (was silently falling back before).
+- **Real job data.** The 52 fabricated jobs/companies seeded earlier were deleted and
+  replaced with 20 real, currently-live job postings pulled directly from BrighterMonday
+  Kenya, Fuzu Kenya, and RemoteOK (real companies: Futuristic Ltd, MyAccurate Books,
+  Afstor Energy, Simba Corporation, Victory Farms, GIZ Kenya, I&M Bank, NCBA Group,
+  World Vision Kenya, BBC World Service, Emerge Egress Consulting, xAI, CoinGecko,
+  GiveDirectly, Atlassian, Redis, Affirm, New Relic, Superhuman), each with a real
+  source URL and paraphrased (not copied) description. 114 applications reseeded
+  against these real jobs. This is a one-time manual pull, not the automated 12-hour
+  cron — see Gap G8 below for what's needed to make that recurring.
+- **Design**: removed the navy+orange color scheme (the "Handshake orange" label in the
+  original CSS comment was inaccurate — Handshake's actual current brand doesn't use
+  orange). Replaced with navy + a single vivid indigo accent, light and dark mode both
+  updated. Added Framer Motion hover/entrance animation to the trust bar and category
+  cards (including a purpose-driven hover reveal: "See your roadmap..."). Footer
+  expanded to 5 columns with real LinkedIn/Instagram social icons.
 - **Vercel deploy**: **confirmed live** at https://career-compass-ai-9cd6f40c.vercel.app/,
   landing page verified rendering correctly (fetched and inspected directly). Auto-deploys
   on every push to `main` since Vercel is connected to the GitHub repo.
@@ -143,7 +156,27 @@ constraint as G2).
 None of G1–G7 were attempted blind in this session. Building any of them without real
 data (G2, G7) or without testing against a live deploy (G1, G3, G5, G6) risks shipping
 broken or fabricated content, which is worse than not shipping. Recommended order,
-matching survey demand: **G1 → G2 → G6 → G3 → G7 → G4 → G5.**
+matching survey demand: **G1 → G2 → G6 → G3 → G7 → G4 → G9 → G10 → G8 → G5.**
+
+**G8 — Recurring 12-hour scraping cron.** Infrastructure exists (`scrape.server.ts`,
+Firecrawl-based, real structured extraction, `job_sources` table already lists real
+sources). Blocked on two things: a `FIRECRAWL_API_KEY` needs to be added (you've only
+added Gemini so far), and `scrape.server.ts` currently reads `process.env.FIRECRAWL_API_KEY`
+directly rather than through the new Vault-backed `ai_provider_keys` system — these two
+need to be wired together, then a `pg_cron` schedule added to trigger it every 12 hours.
+
+**G9 — Country/language selector with geo-detection and Google Translate.** Not built.
+Requested: auto-detect country from device location, manual override, and a full-page
+Google Translate integration.
+
+**G10 — Recruiter/company dashboard depth.** Recruiter and company_admin roles exist
+and demo accounts are linked to real posted jobs, but a dedicated "shortlisted
+candidates" view and a "jobs I've posted" management view are not confirmed built out
+in the UI — needs verification against the live app and likely some UI work.
+
+None of G8–G10 were attempted blind this session, given remaining time in the session
+and that G8 needs a key you haven't added yet, G9 is a clean standalone feature, and
+G10 needs live-app verification before extending.
 
 ## 6. Demo accounts
 
@@ -154,7 +187,7 @@ All passwords: `Demo2026!CareerPilot` (rotate before any public demo)
 | Student | `demo.student@careerpilot-demo.io` | Final-year CS student, entry-level profile |
 | Graduate | `demo.graduate@careerpilot-demo.io` | Recent grad, Business Admin, one work history entry |
 | Recruiter | `demo.recruiter@careerpilot-demo.io` | Posts under Zamara Digital, owns 3 seeded jobs |
-| Company (employer) | `demo.company@careerpilot-demo.io` | `company_admin` role, owns Zamara Digital |
+| Company (employer) | `demo.company@careerpilot-demo.io` | `company_admin` role, owns The Lucrebag |
 | Super Admin | `admin.lucrebag@gmail.com` | `admin` + `cms_editor`, password `CareerPilot2026!Admin` |
 
 ## 7. Security posture summary
