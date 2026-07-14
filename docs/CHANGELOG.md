@@ -128,3 +128,44 @@ than leaving a stale gap entry.
 **Not yet verified:** the geo-detection can only be confirmed against the live Vercel
 deployment (the header doesn't exist locally) — check that the detected country looks
 right once this deploys.
+
+---
+
+## 2026-07-14 — G8 shipped: real 12-hour scraping cron, wired to Vault Firecrawl key
+
+**Context:** Firecrawl key added at `/admin/settings`. Went to wire up the recurring
+scraping job (G8), which surfaced and required fixing three real problems in sequence,
+documented here rather than glossed over.
+
+1. `scrape.server.ts` was reading `process.env.FIRECRAWL_API_KEY` directly, which was
+   never set — the key lives in Vault via `/admin/settings`, not an env var. Added
+   `get_provider_key(text)` RPC (service_role only, same security posture as
+   `get_next_ai_key()`) and wired `getFirecrawl()` to use it, with an env var fallback
+   for local dev. Also wired success/failure reporting through
+   `report_ai_key_result()` so Firecrawl's health shows up in the same tracking as the
+   LLM provider keys.
+2. Scheduled `pg_cron` job `scrape-jobs-every-12h`, calling the live
+   `/api/public/hooks/scrape-jobs` webhook via `pg_net`.
+3. **Manually triggered the webhook multiple times to verify it actually works**,
+   rather than trusting the schedule blindly:
+   - First attempt (against pre-fix code): confirmed exactly the expected failure
+     (`FIRECRAWL_API_KEY is not configured`) across all 5 sources.
+   - After the fix deployed: sequential-loop scraping of 5 sources hung past even a
+     120s `pg_net` timeout.
+   - Parallelized with `Promise.allSettled`: still hung past 90s with zero response.
+   - Isolated with 1 source: succeeded (~20s, though 0 jobs found for that specific
+     source's page structure).
+   - Isolated with 2 sources concurrently: succeeded (~30s), found real jobs (Fuzu
+     Kenya: 10, Remote OK: 3).
+   - Root cause of the 5-way hang not fully diagnosed — no Vercel function log access
+     this session (the Vercel MCP connector has been broken all session, "No approval
+     received" on every call). Fixed pragmatically instead: batch concurrency to 2
+     sources at a time.
+   - **Final verified run, all 5 sources**: We Work Remotely (8), Remote OK (5), Fuzu
+     Kenya (10), MyJobMag Kenya (20), BrighterMonday Kenya (16). 172 real jobs now in
+     the database, all with genuine source URLs.
+
+**If this breaks again:** check `job_sources.last_status`/`last_error` first, then
+manually trigger via `SELECT net.http_post(...)` against the live URL (see the
+migration file for the exact call) and poll `net._http_response` — that's how this was
+debugged, and it doesn't require Vercel dashboard access.

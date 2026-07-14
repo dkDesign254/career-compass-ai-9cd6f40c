@@ -158,12 +158,17 @@ data (G2, G7) or without testing against a live deploy (G1, G3, G5, G6) risks sh
 broken or fabricated content, which is worse than not shipping. Recommended order,
 matching survey demand: **G1 → G2 → G6 → G3 → G7 → G4 → G9 → G10 → G8 → G5.**
 
-**G8 — Recurring 12-hour scraping cron.** Infrastructure exists (`scrape.server.ts`,
-Firecrawl-based, real structured extraction, `job_sources` table already lists real
-sources). Blocked on two things: a `FIRECRAWL_API_KEY` needs to be added (you've only
-added Gemini so far), and `scrape.server.ts` currently reads `process.env.FIRECRAWL_API_KEY`
-directly rather than through the new Vault-backed `ai_provider_keys` system — these two
-need to be wired together, then a `pg_cron` schedule added to trigger it every 12 hours.
+**G8 — Recurring 12-hour scraping cron.** **Built and verified working end to end.**
+`scrape.server.ts` now pulls the Firecrawl key from Vault via `/admin/settings`
+(you added it) instead of requiring a raw env var. A `pg_cron` job
+(`scrape-jobs-every-12h`) hits the live `/api/public/hooks/scrape-jobs` webhook via
+`pg_net` every 12 hours. Diagnostic note for the record: running all 5 sources fully
+in parallel hung indefinitely on the live Vercel deployment (tested at 90s+ with no
+response) — root cause not fully pinned down (no Vercel log access this session, the
+MCP connector is still broken), but batching to 2 sources concurrently at a time fixed
+it cleanly. Final verified run: We Work Remotely (8), Remote OK (5), Fuzu Kenya (10),
+MyJobMag Kenya (20), BrighterMonday Kenya (16) — 172 real jobs now in the database
+total, all with genuine source URLs.
 
 **G9 — Country/language selector with geo-detection and Google Translate.** **Built.**
 `src/lib/geo.functions.ts` reads Vercel's automatic `x-vercel-ip-country` header (free,
