@@ -222,3 +222,36 @@ response end-to-end — that requires a real authenticated browser session, whic
 achievable from this session's server-side testing tools. **Next session or you: log
 in as `demo.student@careerpilot-demo.io` and try the employability score page. If it
 errors, check `ai_provider_keys.last_error` for the `gemini` row first.**
+
+---
+
+## 2026-07-14 (continued) — Full demo profiles + real sample resumes for testing
+
+**Requested:** complete, realistic profiles with sample resumes for the demo accounts,
+specifically to test employability scoring and skill-gap analysis before continuing to
+the next stage.
+
+**Done:**
+- `demo.student@careerpilot-demo.io` (Amara Student): full career profile (9 skills,
+  2 work history entries including a real internship narrative, 1 certification —
+  Meta Front-End Developer Professional Certificate) plus a complete, realistic resume
+  in `resumes.raw_text` with summary, education, experience, 2 projects, skills, and
+  certifications sections, written the way an actual CS student's resume reads.
+- `demo.graduate@careerpilot-demo.io` (Brian Graduate): same depth — 8 skills, 2 work
+  history entries (Twiga Foods sales internship with a quantified outcome, a
+  university society volunteer role), 1 certification (HubSpot Inbound Sales), full
+  resume text.
+- Fixed a data inconsistency: `demo.company`'s profile headline still said "Zamara
+  Digital" (a fabricated company removed in an earlier session) even though ownership
+  had been relinked to The Lucrebag — corrected.
+- `demo.recruiter` and `demo.company` intentionally left without career_profiles/resumes
+  — they're employer-side accounts, a career profile doesn't apply to them the way it
+  does to a job seeker.
+
+**Note for testing:** the resumes were deliberately left without a pre-filled
+`ats_score`/`analysis` — that's what the ATS review feature (part of the G1 fix) is
+supposed to generate when you actually test it, pre-filling it would defeat the point
+of testing.
+
+**Status:** handed back for user testing (employability score, skill-gap analysis,
+resume ATS review) before proceeding to G2.
