@@ -2,9 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { createLovableAiGatewayProvider, mapGatewayError } from "./ai-gateway.server";
+import { getAiModel, reportAiResult, mapAiError } from "./ai-model.server";
 
-const MODEL = "google/gemini-3-flash-preview";
 const FREE_QUOTA = 2;
 
 const QUOTA_TYPES = new Set([
@@ -55,12 +54,6 @@ async function checkAndConsumeQuota(
     .from("ai_run_usage")
     .insert({ user_id: userId, run_type: runType, period_month: period });
   if (insErr) throw new Error(insErr.message);
-}
-
-function getApiKey() {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  return key;
 }
 
 async function loadProfile(supabase: any, userId: string) {
@@ -136,15 +129,16 @@ export const scoreEmployability = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "employability");
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { output: aiOutput } = await generateText({
-        model: gateway(MODEL),
+        model,
         output: Output.object({ schema: EmployabilitySchema }),
         system:
           "You are an expert career coach. Produce an honest, evidence-based employability assessment for the candidate based on the profile they provide. Be specific and constructive.",
         prompt: `Candidate profile:\n${profileSummary(profile)}`,
       });
+      await reportAiResult(provider, true);
       const result = aiOutput;
       await supabase
         .from("career_profiles")
@@ -152,7 +146,8 @@ export const scoreEmployability = createServerFn({ method: "POST" })
         .eq("user_id", userId);
       return result;
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
@@ -184,15 +179,36 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "skill_gap");
+
+    // Ground the analysis in real, currently-open job postings instead of
+    // letting the model imagine what a role requires.
+    const { data: relevantJobs } = await supabase
+      .from("jobs")
+      .select("title, skills")
+      .eq("status", "open")
+      .or(`title.ilike.%${(profile.target_role ?? "").split(" ")[0] || "x"}%,industry.ilike.%${profile.industry ?? "x"}%`)
+      .limit(25);
+    const skillFrequency = new Map<string, number>();
+    for (const j of relevantJobs ?? []) {
+      for (const s of (j.skills as string[] | null) ?? []) {
+        skillFrequency.set(s, (skillFrequency.get(s) ?? 0) + 1);
+      }
+    }
+    const marketSkills = [...skillFrequency.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([skill, count]) => `${skill} (appears in ${count} of ${relevantJobs?.length ?? 0} similar live postings)`);
+
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { output: aiOutput } = await generateText({
-        model: gateway(MODEL),
+        model,
         output: Output.object({ schema: SkillGapSchema }),
         system:
-          "You are a senior recruiter and career coach. Identify the skills the candidate must build to land their target role and produce a focused learning plan.",
-        prompt: `Profile:\n${profileSummary(profile)}\n\nTarget role: ${profile.target_role}.`,
+          "You are a senior recruiter and career coach. Identify the skills the candidate must build to land their target role and produce a focused learning plan. Ground your assessment in the real, currently-open job postings provided — don't invent requirements that aren't reflected in either the candidate's profile or the market data given.",
+        prompt: `Profile:\n${profileSummary(profile)}\n\nTarget role: ${profile.target_role}.\n\nSkills actually required across ${relevantJobs?.length ?? 0} similar currently-open job postings, ranked by frequency:\n${marketSkills.join("\n") || "(no closely matching live postings found — base this on general industry knowledge and say so)"}`,
       });
+      await reportAiResult(provider, true);
       const result = aiOutput;
       await supabase
         .from("career_profiles")
@@ -200,7 +216,8 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
         .eq("user_id", userId);
       return result;
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
@@ -228,15 +245,16 @@ export const optimizeResume = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context as any;
     await checkAndConsumeQuota(supabase, userId, "resume_ats");
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { output: aiOutput } = await generateText({
-        model: gateway(MODEL),
+        model,
         output: Output.object({ schema: ResumeSchema }),
         system:
           "You are an ATS expert. Score the resume against the target role, flag issues, and rewrite the summary plus key bullets to be quantified and ATS-friendly.",
         prompt: `Target role: ${data.target_role ?? "general"}\n\nResume:\n${data.resume_text}`,
       });
+      await reportAiResult(provider, true);
       const result = aiOutput;
       const { data: row } = await supabase
         .from("resumes")
@@ -251,7 +269,8 @@ export const optimizeResume = createServerFn({ method: "POST" })
         .single();
       return { id: row?.id, ...result };
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
@@ -276,15 +295,16 @@ export const recommendCareers = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "recommendations");
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { output: aiOutput } = await generateText({
-        model: gateway(MODEL),
+        model,
         output: Output.object({ schema: RecsSchema }),
         system:
           "You are a career strategist. Recommend 3-5 career paths the candidate could pursue, each with a fit score, rationale and an actionable 90-day plan.",
         prompt: `Profile:\n${profileSummary(profile)}`,
       });
+      await reportAiResult(provider, true);
       const result = aiOutput;
       await supabase
         .from("career_profiles")
@@ -292,7 +312,8 @@ export const recommendCareers = createServerFn({ method: "POST" })
         .eq("user_id", userId);
       return result;
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
@@ -313,14 +334,15 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "cover_letter");
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { text } = await generateText({
-        model: gateway(MODEL),
+        model,
         system:
           "Write a tailored, professional cover letter (3-4 short paragraphs). Match the candidate's actual experience to the role; never invent credentials. Tone: confident, warm, concrete.",
         prompt: `Candidate profile:\n${profileSummary(profile)}\n\nRole: ${data.job_title} at ${data.company}\n\nJob description:\n${data.job_description}`,
       });
+      await reportAiResult(provider, true);
       await supabase.from("generated_documents").insert({
         user_id: userId,
         doc_type: "cover_letter",
@@ -329,7 +351,8 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
       });
       return { text };
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
@@ -362,15 +385,16 @@ export const generateInterviewKit = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "interview_kit");
+    const { provider, model } = await getAiModel();
     try {
-      const gateway = createLovableAiGatewayProvider(getApiKey());
       const { output: aiOutput } = await generateText({
-        model: gateway(MODEL),
+        model,
         output: Output.object({ schema: InterviewSchema }),
         system:
           "You are an interview coach. Produce 6-8 likely interview questions for the candidate's target role, mixing behavioral, technical, situational, and culture-fit. For each, give a tight sample answer tailored to the candidate's actual profile.",
         prompt: `Role: ${data.job_title} at ${data.company ?? "the company"}\nJD: ${data.job_description ?? "(not provided)"}\n\nCandidate profile:\n${profileSummary(profile)}`,
       });
+      await reportAiResult(provider, true);
       const result = aiOutput;
       await supabase.from("interview_sessions").insert({
         user_id: userId,
@@ -379,6 +403,7 @@ export const generateInterviewKit = createServerFn({ method: "POST" })
       });
       return result;
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });

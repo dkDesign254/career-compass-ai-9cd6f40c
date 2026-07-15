@@ -93,14 +93,12 @@ export const previewProfileImport = createServerFn({ method: "POST" })
     if (!markdown || markdown.length < 40) throw new Error("The page didn't return usable content.");
 
     const { generateObject } = await import("ai");
-    const { createLovableAiGatewayProvider, mapGatewayError } = await import("./ai-gateway.server");
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY missing on server.");
-    const provider = createLovableAiGatewayProvider(apiKey);
+    const { getAiModel, reportAiResult, mapAiError } = await import("./ai-model.server");
+    const { provider, model } = await getAiModel();
 
     try {
       const { object } = await generateObject({
-        model: provider("google/gemini-2.5-flash"),
+        model,
         schema: importedSchema,
         prompt:
           "Read this professional profile / portfolio page and extract a structured career profile. " +
@@ -108,9 +106,11 @@ export const previewProfileImport = createServerFn({ method: "POST" })
           "If a section is missing, omit it.\n\nPAGE MARKDOWN:\n" +
           markdown.slice(0, 12000),
       });
+      await reportAiResult(provider, true);
       return { source: kind, parsed: object };
     } catch (err) {
-      throw mapGatewayError(err);
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
     }
   });
 
