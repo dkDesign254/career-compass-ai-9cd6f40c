@@ -119,11 +119,32 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
 
 ## 5. Known gaps, prioritized by survey demand (§1)
 
-**G1 — Employability score & skill-gap analysis (survey-ranked #1/#2 desired feature).**
-Not built as standalone features. Needs: a scoring function independent of any single
-job (aggregate profile completeness + skill breadth + experience vs. a target-role
-benchmark), plus a skill-gap comparator (user skills vs. a chosen target role's
-requirements, gap list output). Estimated as its own stage.
+**G1 — Employability score & skill-gap analysis.** **Corrected: this was already
+built, not missing.** `ai.functions.ts` already implemented employability scoring,
+skill-gap analysis (now enhanced to ground itself in real, currently-open job postings
+instead of letting the model invent role requirements), resume ATS optimization,
+career recommendations, cover letter generation, and interview kit generation. The UI
+pages (`employability.tsx`, `skill-gap.tsx`) already existed too. The real problem: all
+of it called Lovable's proprietary AI gateway (`ai.gateway.lovable.dev`, needs a
+Lovable Cloud workspace), meaningless outside Lovable's infrastructure. Rewired all 6
+AI call sites to `src/lib/ai-model.server.ts`, which resolves a real key via the same
+Vault-backed `get_next_ai_key()` system built for G8, using Gemini's official
+OpenAI-compatible endpoint. Verified: both `/employability` and `/skill-gap` pages
+resolve correctly in production (200 OK). **Not fully verified**: an actual live AI
+call triggering a real Gemini response, this needs a real authenticated session to
+test, which wasn't achievable from this session's tooling. Log into the app as
+`demo.student@careerpilot-demo.io` and try the employability score page to confirm —
+if it errors, check `ai_provider_keys.last_error` for the gemini row first.
+
+**Separate issue found and partially unresolved: new standalone API route files
+(`src/routes/api/public/hooks/*.ts`) 404 in production even when correctly present in
+the build's route tree**, while page routes and the pre-existing `scrape-jobs.ts`
+route work fine. Tested with two differently-named fresh files, both 404'd
+consistently. Root cause not found — no Vercel build/routing log access this session.
+Doesn't block anything currently shipped (nothing new was added via this route type,
+the debug files were removed), but avoid adding new standalone API route files until
+this is understood, prefer TanStack Start server functions (proven working throughout
+the app) for any new server-side endpoint instead.
 
 **G2 — Certifications/courses library with real links.** Not built. You asked for a
 seeded library of actual real-world certifications, courses, diplomas, degrees with
@@ -131,9 +152,11 @@ working application links and guidance, tied into the "guide map" feature below.
 needs real data curation (can't be fabricated — must be genuine, verifiable
 certifications/courses per your explicit ask), so it is its own stage of work.
 
-**G3 — AI coaching chatbot with nuance.** Not built. Needs a chat UI + a server function
-that calls whichever LLM key is set via `/admin/settings`, with the user's profile as
-context. Depends on G1 and an actual provider key being set first.
+**G3 — AI coaching chatbot with nuance.** Partially addressed as a side effect of the
+G1 fix: career recommendations, resume ATS review, cover letter generation, and
+interview kit generation are all now wired to a real AI provider (see G1). A dedicated
+open-ended chat *interface* (as opposed to these structured, single-purpose AI
+features) is still not built.
 
 **G4 — Full CMS control ("super admin can edit every pixel").** Partially built (blog
 CMS only). Extending this to logos, icons, social links, and arbitrary page copy needs
