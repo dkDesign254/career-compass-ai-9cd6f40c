@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// TEMPORARY — verifies getAiModel() actually reaches a real provider end to
-// end on the live deployment. Same auth pattern as scrape-jobs.ts. Remove
-// after confirming; not meant to stay in the app long-term.
-export const Route = createFileRoute("/api/public/hooks/test-ai")({
+// TEMPORARY — verifies getAiModel() reaches a real provider end to end.
+// Remove after confirming.
+export const Route = createFileRoute("/api/public/hooks/ai-check-v2")({
   server: {
     handlers: {
       POST: async ({ request }) => {
