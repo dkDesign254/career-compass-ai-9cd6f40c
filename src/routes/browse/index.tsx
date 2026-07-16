@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RegionLanguageSwitcher } from "@/components/region-language-switcher";
 import { getPublicJobsList } from "@/lib/public-jobs.functions";
 
-export const Route = createFileRoute("/browse")({
+export const Route = createFileRoute("/browse/")({
   head: () => ({ meta: [{ title: "Browse jobs — CareerPilot AI" }] }),
   component: BrowsePage,
 });
