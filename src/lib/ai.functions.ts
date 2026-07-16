@@ -31,11 +31,11 @@ async function checkAndConsumeQuota(
   // Active paid plan bypasses the free quota.
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("status, plan")
+    .select("status, tier")
     .eq("user_id", userId)
     .eq("status", "active")
     .maybeSingle();
-  if (sub && sub.plan && sub.plan !== "free") return;
+  if (sub && sub.tier && sub.tier !== "free") return;
 
   const period = monthKey();
   const { count, error: countErr } = await supabase
@@ -95,15 +95,16 @@ export const getQuotaStatus = createServerFn({ method: "GET" })
       .eq("period_month", period);
     const { data: sub } = await supabase
       .from("subscriptions")
-      .select("status, plan")
+      .select("status, tier")
       .eq("user_id", userId)
       .eq("status", "active")
       .maybeSingle();
-    const isPaid = !!(sub && sub.plan && sub.plan !== "free");
+    const isPaid = !!(sub && sub.tier && sub.tier !== "free");
     return {
       used: count ?? 0,
       limit: isPaid ? null : FREE_QUOTA,
       isPaid,
+      tier: sub?.tier ?? "free",
     };
   });
 
