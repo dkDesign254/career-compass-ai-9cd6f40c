@@ -246,3 +246,71 @@ issues from the security-advisor list as of this audit; re-run
 3. Every status claim in this file should be something that was actually verified
    (queried, tested, or read from source), not assumed. If something is unverified,
    say so explicitly, as done above.
+
+## 8. Large request batch — 2026-07-14 (staged, not yet built)
+
+A single message requested a large number of distinct features. Two were built
+immediately (see Changelog): the subscription/quota bug fix + demo account upgrades,
+and public job browsing without login. Everything else below is logged as a gap,
+grouped by theme, not yet built. None of this was attempted blind — each needs either
+real design decisions, real data curation, or careful UI work that shouldn't be rushed
+alongside a dozen other things in the same pass.
+
+**Profile & identity**
+- G11: LinkedIn-style full profile page (banner image, photo, structured sections) —
+  referenced against the user's real LinkedIn profile as a model. Needs the profile
+  schema extended (banner_url doesn't exist yet) and a real page redesign.
+- G12: Profile completeness score + AI-generated suggestions to improve it.
+- G13: OAuth sign-in — Google, LinkedIn, GitHub. Needs verification that Google OAuth
+  is actually configured correctly in Supabase Auth settings (client ID/secret), plus
+  new LinkedIn/GitHub OAuth app registration.
+
+**Jobs & applications**
+- G14: Personalized job-alert preferences (e.g. "notify me about consulting or design
+  roles") + notification delivery when matching jobs appear.
+- G15: Resume management UI — list of uploaded resumes with scores, click into a full
+  ATS analysis panel showing when it was run and against which job.
+- G16: LinkedIn-style application tracking view, including applications made outside
+  the app (link out to the original site) vs. inside the app (full detail + status
+  timeline/"map").
+- G17: Applications analytics dashboard (volume applied, response rate, time-to-response).
+
+**Skill gap & recommendations**
+- G18: Skill-gap page redesign — a general, always-visible library of real
+  certifications/diplomas/degrees (not just a blank page waiting for an AI run), plus
+  the existing personalized analysis alongside it. Needs real, verifiable course/cert
+  data curated the same way the real job data was — can't be fabricated.
+- G19: General, always-browsable career path library (not gated behind running AI
+  recommendations first).
+
+**Platform / navigation**
+- G20: Full country list (all countries, not the current curated 10) tied to that
+  country's actual language(s); full language list for the translate switcher.
+- G21: Help section redesign — contextual hover help per sidebar icon instead of a
+  static popup, plus a Scribe-style guided step-by-step walkthrough of the dashboard.
+- G22: New-jobs notifications ("15 new jobs available").
+- G23: Dark/light mode toggle available on the public landing page, not just inside
+  the authenticated app.
+
+**Design**
+- G24: Another landing page design pass — explicitly compared against joinhandshake.com
+  and fuzu.com again, current state judged not close enough. Needs real, non-AI-looking
+  imagery (stock photography or original illustration, not the current generated set).
+
+**CMS & platform-wide**
+- G25: WordPress-style CMS — super admin editing of all pages/posts/site content, not
+  just the blog. This is the same ask as the earlier-logged G4, restated with a
+  specific comparison point (WordPress).
+- G26: Social/LinkedIn-style features — any user able to post, a feed, general social
+  platform mechanics layered onto the career platform.
+
+**Process**
+- G27: Periodically review the Google Sheet questionnaire responses for new feedback
+  and make adjustments accordingly, notifying the user when this happens rather than
+  doing it silently.
+
+Recommended next: given survey data already reviewed ranks concrete career-outcome
+features (skill gap, recommendations, resume tools) above social/platform features,
+suggest tackling G18/G19 (skill-gap and recommendations pages becoming genuinely useful
+without requiring an AI run first) next, since they're concrete, don't require new
+third-party OAuth app registrations, and build directly on what's already shipped.
