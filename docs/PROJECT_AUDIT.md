@@ -117,7 +117,15 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
   landing page verified rendering correctly (fetched and inspected directly). Auto-deploys
   on every push to `main` since Vercel is connected to the GitHub repo.
 
-## 5. Known gaps, prioritized by survey demand (§1)
+## 5. Known gaps, prioritized by survey demand (§1) — status recap
+
+Quick reference before reading the detailed entries below: **Done** — G1, G8, G9, G10,
+plus two items shipped same-session as requested (subscription/quota bug fix + demo
+account upgrades, public job browsing at `/browse`). **Partially done** — G3 (career
+recs/ATS/cover letter/interview kit work; no open-ended chat UI), G4 (blog CMS only,
+not full-page editing), G5 (some hover/entrance motion added on the landing page; no
+broader animation pass). **Not built** — G2, G6, G7, and the full G11–G27 batch logged
+in §8.
 
 **G1 — Employability score & skill-gap analysis.** **Corrected: this was already
 built, not missing.** `ai.functions.ts` already implemented employability scoring,
@@ -164,9 +172,10 @@ a generalized `site_content` key-value table + an admin page to edit it + the fr
 components switched from hardcoded strings/images to reading from that table. This is a
 meaningful refactor of the landing page and app shell, not a small addition.
 
-**G5 — Motion/animation layer.** Not built. Needs a decision on library (Framer Motion
-was already a dependency per the Jul 4 Lovable run history) and a pass through key
-screens (landing, dashboard, job cards, onboarding) to add transitions.
+**G5 — Motion/animation layer.** **Partially built.** Framer Motion added to the
+landing page trust bar (staggered entrance, hover scale) and category cards
+(hover-reveal purpose copy). Not yet extended to the authenticated app (dashboard,
+job cards, onboarding) or given a deliberate systemwide motion language.
 
 **G6 — Career roadmap/guide map with checkpoints and quotes.** Not built. Depends on G1
 (scoring) and G2 (certifications) existing first, since the roadmap is meant to
