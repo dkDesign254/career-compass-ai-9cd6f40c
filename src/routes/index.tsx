@@ -104,7 +104,7 @@ function Landing() {
                 onClick={() => (window.location.href = "/browse")}
               />
               <Button asChild size="sm" className="rounded-full bg-primary px-5 hover:bg-primary/90">
-                <Link to="/auth">Search</Link>
+                <Link to="/browse/">Search</Link>
               </Button>
             </div>
 
@@ -179,7 +179,7 @@ function Landing() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {CATEGORIES.map((c) => (
-              <Link key={c.label} to="/auth" className="group relative block overflow-hidden rounded-2xl border border-border/60 ring-soft transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-xl">
+              <Link key={c.label} to="/browse/" className="group relative block overflow-hidden rounded-2xl border border-border/60 ring-soft transition-transform duration-300 hover:-translate-y-1.5 hover:shadow-xl">
                 <div className={`aspect-[4/5] w-full ${c.tint}`}>
                   <img src={c.image} alt={c.label} loading="lazy" width={900} height={700} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 </div>
@@ -205,7 +205,7 @@ function Landing() {
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">Today's board</p>
               <h2 className="mt-2 font-display text-4xl font-semibold tracking-tight text-primary">Real jobs, updated every 12 hours.</h2>
             </div>
-            <Button asChild variant="outline" className="hidden rounded-full md:inline-flex"><Link to="/auth">See all jobs <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            <Button asChild variant="outline" className="hidden rounded-full md:inline-flex"><Link to="/browse/">See all jobs <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
           </div>
           {jobs && jobs.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -338,7 +338,7 @@ function Landing() {
             <p className="text-xs font-semibold uppercase tracking-wider text-primary">Students</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li><Link to="/auth" className="hover:text-accent">Sign up free</Link></li>
-              <li><Link to="/auth" className="hover:text-accent">Browse jobs</Link></li>
+              <li><Link to="/browse/" className="hover:text-accent">Browse jobs</Link></li>
               <li><a href="#pillars" className="hover:text-accent">Resume review</a></li>
               <li><a href="#categories" className="hover:text-accent">Explore fields</a></li>
             </ul>
