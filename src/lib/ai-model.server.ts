@@ -39,7 +39,14 @@ export async function getAiModel() {
     headers: { Authorization: `Bearer ${row.api_key}` },
   });
 
-  return { provider: row.provider, model: client(config.model) };
+  // The generic OpenAI-compatible wrapper doesn't know a given provider
+  // supports real structured outputs (response_format: json_schema) unless
+  // told explicitly — without this it falls back to a much less reliable
+  // prompt-and-hope approach, which is what was causing "could not parse
+  // the response" / "response did not match schema" errors against Gemini.
+  const modelInstance = client.languageModel(config.model, { supportsStructuredOutputs: true });
+
+  return { provider: row.provider, model: modelInstance };
 }
 
 export async function reportAiResult(provider: string, success: boolean, errorMessage?: string) {
