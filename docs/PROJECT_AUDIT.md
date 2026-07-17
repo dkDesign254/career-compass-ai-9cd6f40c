@@ -113,9 +113,16 @@ Stack: TanStack Start (React, SSR) + Supabase (Postgres/Auth/Storage/Vault) + Ve
   updated. Added Framer Motion hover/entrance animation to the trust bar and category
   cards (including a purpose-driven hover reveal: "See your roadmap..."). Footer
   expanded to 5 columns with real LinkedIn/Instagram social icons.
-- **Vercel deploy**: **confirmed live** at https://career-compass-ai-9cd6f40c.vercel.app/,
-  landing page verified rendering correctly (fetched and inspected directly). Auto-deploys
-  on every push to `main` since Vercel is connected to the GitHub repo.
+- **Vercel deploy**: **confirmed live and current as of 2026-07-16.** Important history:
+  deployments silently broke after commit `78af833` (a `vercel.json` with a `functions`
+  block incompatible with this project's Nitro/Build-Output-API-v3 deployment) and
+  stayed broken through 13 consecutive commits, roughly two full sessions of work,
+  while the site kept serving the last successful pre-break build. Caught only when
+  the user sent a screenshot showing an error message from code that had already been
+  deleted. Fixed by deleting `vercel.json`. **Lesson for future verification**: an HTTP
+  200 alone doesn't confirm a deployment is current — a stale build can return 200 for
+  a route that existed before it went stale. Verify by checking response *content*
+  against something known to have changed recently, not just status code.
 
 ## 5. Known gaps, prioritized by survey demand (§1) — status recap
 
