@@ -5,6 +5,8 @@
 // the circuit breaker (see src/lib/ai-provider.server.ts for the same pattern
 // used elsewhere).
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { generateText } from "ai";
+import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export class NoAiProviderKeyError extends Error {
@@ -39,14 +41,66 @@ export async function getAiModel() {
     headers: { Authorization: `Bearer ${row.api_key}` },
   });
 
-  // The generic OpenAI-compatible wrapper doesn't know a given provider
-  // supports real structured outputs (response_format: json_schema) unless
-  // told explicitly — without this it falls back to a much less reliable
-  // prompt-and-hope approach, which is what was causing "could not parse
-  // the response" / "response did not match schema" errors against Gemini.
-  const modelInstance = client.languageModel(config.model, { supportsStructuredOutputs: true });
+  // NOTE: previously tried forcing supportsStructuredOutputs: true here to
+  // get real response_format: json_schema support. Confirmed via production
+  // logs this was wrong — Gemini's OpenAI-compatible endpoint (at least as
+  // exposed through this SDK/provider combination) doesn't actually support
+  // that feature: "AI SDK Warning (gemini.chat / gemini-3.5-flash): The
+  // feature 'responseFormat' is not supported". Using the plain callable
+  // form and doing structured output manually via generateStructured()
+  // below instead — provider-agnostic, doesn't depend on any specific
+  // response-format capability.
+  return { provider: row.provider, model: client(config.model) };
+}
 
-  return { provider: row.provider, model: modelInstance };
+// Provider-agnostic structured output: asks for raw JSON via prompt
+// instructions instead of relying on a provider-specific response_format
+// feature, then parses and validates it with the given Zod schema. Retries
+// once with the validation error fed back to the model if the first
+// attempt doesn't parse or doesn't match the schema.
+export async function generateStructured<T>(params: {
+  model: any;
+  schema: z.ZodType<T>;
+  system: string;
+  prompt: string;
+}): Promise<T> {
+  const jsonInstruction =
+    "\n\nRespond with ONLY a single raw JSON object. No markdown code fences, no commentary before or after, just the JSON itself, starting with { and ending with }.";
+
+  const attempt = async (extraContext?: string) => {
+    const { text } = await generateText({
+      model: params.model,
+      system: params.system + jsonInstruction,
+      prompt: extraContext ? `${params.prompt}\n\n${extraContext}` : params.prompt,
+    });
+    // Strip markdown code fences if the model added them anyway, and grab
+    // the outermost {...} in case there's stray commentary around it.
+    let cleaned = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      throw new Error("Response was not valid JSON.");
+    }
+    const result = params.schema.safeParse(parsed);
+    if (!result.success) {
+      throw new Error(`Response did not match the expected structure: ${result.error.message}`);
+    }
+    return result.data;
+  };
+
+  try {
+    return await attempt();
+  } catch (firstErr) {
+    // One retry, telling the model exactly what went wrong so it can self-correct.
+    const message = firstErr instanceof Error ? firstErr.message : String(firstErr);
+    return await attempt(`Your previous response failed with: "${message}". Fix it and respond again with only the corrected raw JSON object.`);
+  }
 }
 
 export async function reportAiResult(provider: string, success: boolean, errorMessage?: string) {

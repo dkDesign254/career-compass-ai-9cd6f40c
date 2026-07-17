@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { generateText, generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
-import { getAiModel, reportAiResult, mapAiError } from "./ai-model.server";
+import { getAiModel, reportAiResult, mapAiError, generateStructured } from "./ai-model.server";
 
 const FREE_QUOTA = 2;
 
@@ -132,7 +132,7 @@ export const scoreEmployability = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "employability");
     const { provider, model } = await getAiModel();
     try {
-      const { object: aiOutput } = await generateObject({
+      const aiOutput = await generateStructured({
         model,
         schema: EmployabilitySchema,
         system:
@@ -202,7 +202,7 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
 
     const { provider, model } = await getAiModel();
     try {
-      const { object: aiOutput } = await generateObject({
+      const aiOutput = await generateStructured({
         model,
         schema: SkillGapSchema,
         system:
@@ -248,7 +248,7 @@ export const optimizeResume = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "resume_ats");
     const { provider, model } = await getAiModel();
     try {
-      const { object: aiOutput } = await generateObject({
+      const aiOutput = await generateStructured({
         model,
         schema: ResumeSchema,
         system:
@@ -298,7 +298,7 @@ export const recommendCareers = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "recommendations");
     const { provider, model } = await getAiModel();
     try {
-      const { object: aiOutput } = await generateObject({
+      const aiOutput = await generateStructured({
         model,
         schema: RecsSchema,
         system:
@@ -388,7 +388,7 @@ export const generateInterviewKit = createServerFn({ method: "POST" })
     await checkAndConsumeQuota(supabase, userId, "interview_kit");
     const { provider, model } = await getAiModel();
     try {
-      const { object: aiOutput } = await generateObject({
+      const aiOutput = await generateStructured({
         model,
         schema: InterviewSchema,
         system:
