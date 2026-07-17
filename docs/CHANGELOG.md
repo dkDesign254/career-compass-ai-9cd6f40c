@@ -255,3 +255,54 @@ of testing.
 
 **Status:** handed back for user testing (employability score, skill-gap analysis,
 resume ATS review) before proceeding to G2.
+
+---
+
+## 2026-07-16 — Critical fix: found and fixed the real deployment blocker
+
+**What happened:** you sent a screenshot showing "Missing LOVABLE_API_KEY" on the live
+`/skill-gap` page, an error message that only existed in code deleted several commits
+earlier, and said the app showed no changes at all. That was the tell. Asked you to
+check the Vercel dashboard's Deployments tab directly, since the Vercel MCP connector
+has been broken and log-inaccessible this entire session.
+
+**What the dashboard showed:** commit `635f529` (the first Firecrawl-key fix) deployed
+successfully. The very next commit, `78af833` — which added a `vercel.json` with a
+`functions` block for `api/public/hooks/scrape-jobs` — failed. Every single commit
+after that failed too: 13 consecutive failed deployments, each failing in 1-6 seconds.
+That's too fast to be a real `vite build`; it's a config validation error rejected
+before the build even starts. The site had been silently serving the `635f529` build
+this entire time, while I kept testing against what I believed was a live, current
+deployment.
+
+**Root cause:** `vercel.json`'s `functions` block referencing a route path that doesn't
+correspond to a literal file in Vercel's traditional serverless-function layout —
+incompatible with this project's actual deployment mechanism (Nitro's Build Output API
+v3, confirmed earlier by inspecting `.vercel/output/config.json`, which is a simple
+catch-all with no function-specific config at all).
+
+**Fix:** deleted `vercel.json` entirely. The scraping timeout issue it was originally
+added for is already handled by the batching fix (2 sources concurrently) from
+earlier — removing it shouldn't reintroduce that problem.
+
+**Verified after the fix, all via direct HTTP testing, not assumption:**
+- `/` (homepage) — 200, confirmed via full content fetch: real trust bar (Copia, The
+  Lucrebag), real LinkedIn/Instagram footer icons, Kenya/English switcher, all live.
+- `/browse/` — 200 (this was the route stuck 404ing for two full sessions; not a
+  routing bug after all, just never actually deployed)
+- `/skill-gap` — 200
+- `/admin/settings` — 200
+
+**Retrospective — what this means for everything "shipped" between `78af833` and this
+fix:** the AI gateway rewrite (G1), the real jobs replacement, the routeTree.gen.ts
+fix, the certifications library, public job browsing, the subscription/quota bug fix —
+all of it was correctly committed to GitHub the entire time, but **none of it was
+actually live until this fix deployed**. The code was right; the deployment pipeline
+was broken. Re-verify anything you tested against the live site before this point,
+since you may have been looking at the pre-`78af833` build the whole time.
+
+**Process note for future sessions:** HTTP-status checks alone (200 vs 404) aren't
+sufficient to confirm a deployment is current — as this incident showed, a 200 can
+come from a stale build that happens to already contain that route. Check response
+*content* against something known to have changed recently when verifying a deploy,
+the way the homepage content check above was used here.
