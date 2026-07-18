@@ -336,3 +336,45 @@ loop and instead build step by step with concurrent auditing, so future problems
 caught by the process itself rather than by the user re-testing and re-reporting.
 Going forward: any new feature gets its own live-tested verification before being
 marked done in the audit, not marked done on the strength of a local build succeeding.
+
+---
+
+## 2026-07-18 — Fixed landing-page "logout," onboarding crash, shipped formula-first employability scoring
+
+**User feedback, direct:** going in circles on AI reliability chasing, burning time. Stop
+perfecting the AI plumbing in isolation and (a) fix the two real bugs just found, (b)
+ship the deterministic-formula-first employability scoring that was asked for
+explicitly earlier, (c) move fast through the remaining G-gaps rather than continuing
+to test-and-patch one feature at a time.
+
+**Bug found and fixed — landing page looked like it logged users out.** It never
+checked real session state client-side; always rendered "Log in / Sign up" regardless
+of whether the visitor was authenticated. Fixed: checks `supabase.auth.getSession()` +
+`onAuthStateChange()`, shows "Go to dashboard" for an authenticated visitor.
+
+**Bug found and fixed — onboarding hard-crashed going from Skills to Education.** Root
+cause: `career_profiles.education` records (both seeded and from any other write path)
+use `{school, degree, field, year}`; the onboarding form's local shape has always been
+`{institution, qualification, year}`. The code cast the raw record directly into the
+form's type with zero field mapping, so every value read as `undefined`, and the
+Education step's render threw — caught by the router's hard error boundary ("This page
+didn't load"). Fixed with `mapEducationRecord()`, which reads either naming convention
+defensively.
+
+**Shipped: employability score is no longer invented by the LLM.** New
+`computeEmployabilityScore()` — real math: skill breadth + real overlap against
+currently-open job postings' required skills in the candidate's field, experience
+level + work history count, education completeness, and market fit (% of real open
+jobs the candidate's skills strongly match). The LLM's schema no longer even has a
+`score` or `breakdown` field to fill in — its only job now is explaining the
+already-computed numbers (strengths, weaknesses, next actions), grounded in the exact
+facts behind them.
+
+**Also cleared** the Gemini key's circuit-breaker cooldown, which had correctly
+tripped from the structured-output bugs fixed earlier and was then correctly (if
+confusingly) reporting "no active AI provider key" rather than the real underlying
+error — not a new bug, just needed manual reset after the underlying cause was fixed.
+
+**Process going forward, per explicit user direction:** move through the remaining
+G-gaps faster and broader rather than continuing single-feature reliability loops;
+consolidate testing to batched checkpoints rather than a screenshot-per-fix cycle.

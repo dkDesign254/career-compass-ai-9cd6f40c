@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { RegionLanguageSwitcher } from "@/components/region-language-switcher";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { ArrowRight, MapPin, Compass, Search, Star, TrendingUp, Users, Sparkles, Building2, Linkedin, Instagram, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +93,7 @@ function Landing() {
           </nav>
           <div className="flex items-center gap-2">
             <RegionLanguageSwitcher className="hidden lg:flex" />
+            <ThemeToggle />
             {isAuthed ? (
               <Button asChild size="sm" className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent/90">
                 <Link to="/dashboard">Go to dashboard</Link>
