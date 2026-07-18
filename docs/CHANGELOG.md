@@ -398,3 +398,27 @@ profile, OAuth sign-in, job alerts, resume management UI, applications tracking/
 analytics), G18-G19 (already partially done — certifications library exists, general
 career-path library does not), G21-G22 (help redesign, notifications), G24-G27
 (another design pass, WordPress-style CMS, social features, periodic survey review).
+
+## 2026-07-18 (continued) — G22 shipped and verified live; two more real column-name bugs found and fixed
+
+**Found another real bug while working nearby**, same class as the earlier `plan` vs
+`tier` and `education` field-naming mismatches: `feed.functions.ts` and
+`dashboard.tsx` both queried/read `notifications.read_at`, a column that has never
+existed — the real column is `read` (boolean). Fixed both.
+
+**Shipped G22 — new-job notifications, verified with a real scraper trigger, not just
+a clean build:**
+- `scrape-jobs.ts` now distinguishes genuinely new job inserts from re-scraped
+  existing rows using `created_at` (never included in the upsert payload, so it only
+  changes on a real insert) — a correctness detail that matters, since a naive
+  "count everything scraped this run" would notify users constantly for jobs that
+  already existed.
+- Matches new jobs against each user's `target_role`; only notifies users with a real
+  match, not everyone.
+- Bell icon in the app header now shows a live unread count (polled every 60s, marked
+  read on dashboard view).
+- **Manually triggered the scraper against production to verify end to end**: 76 jobs
+  scraped total, 5 correctly identified as genuinely new, 9 notifications correctly
+  generated and worded for matching users. Caught and fixed a subject-verb agreement
+  bug ("1 new job match" → "1 new job matches") from the real output. Test
+  notifications cleaned up after confirming.

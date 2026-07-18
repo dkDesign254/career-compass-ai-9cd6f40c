@@ -348,7 +348,12 @@ alongside a dozen other things in the same pass.
   country's own language(s) — currently the two selectors are independent.
 - G21: Help section redesign — contextual hover help per sidebar icon instead of a
   static popup, plus a Scribe-style guided step-by-step walkthrough of the dashboard.
-- G22: New-jobs notifications ("15 new jobs available").
+- G22: **Done, verified end to end.** The 12-hour scraper now generates real
+  notifications after each run — matches genuinely new jobs (distinguished from
+  re-scraped existing rows via `created_at`) against each user's `target_role`,
+  notifies only users with an actual match. Bell icon shows a live unread count.
+  Test-triggered the scraper directly and confirmed: 5 new jobs detected, 9 real
+  notifications created and correctly worded, cleaned up after confirming.
 - G23: **Done.** Dark/light mode toggle added to the public landing page nav.
 
 **Design**
