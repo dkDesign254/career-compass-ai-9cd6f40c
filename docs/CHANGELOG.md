@@ -306,3 +306,33 @@ sufficient to confirm a deployment is current — as this incident showed, a 200
 come from a stale build that happens to already contain that route. Check response
 *content* against something known to have changed recently when verifying a deploy,
 the way the homepage content check above was used here.
+
+---
+
+## 2026-07-17 — G1 AI features confirmed genuinely working; added mandatory verification protocol
+
+**Third and final bug in this chain**, found via a career-recommendations screenshot
+showing Zod validation errors: Gemini returns numbers as quoted strings (`"85"`) in
+JSON despite explicit prompt instructions not to. Grepped all 5 AI schemas — 7 numeric
+fields across employability, resume ATS, and career recommendations were equally
+exposed, not just the one that happened to error first. Fixed once at the root with a
+`coerceNumericStrings()` pass inside `generateStructured()`, rather than waiting for
+individual bug reports on each field.
+
+**After this fix**: employability score, skill-gap analysis, and career
+recommendations were each confirmed by the user producing real, correctly structured
+AI output. This closes out the three-bug chain from this session (Firecrawl leaking
+into the LLM pool → Gemini's `responseFormat` not actually working → numbers arriving
+as strings), on top of the separate `vercel.json` deployment-breakage incident from
+earlier the same day.
+
+**Added a "Verification protocol" section to `PROJECT_AUDIT.md`** — a permanent,
+mandatory checklist distilled from this session's mistakes, most importantly: an HTTP
+200 is not proof of a healthy deploy, and no AI feature gets marked "working" without
+having actually seen real output from a real run, not just an absence of errors.
+
+**User feedback driving this entry**: asked to stop the reactive fix-only-when-broken
+loop and instead build step by step with concurrent auditing, so future problems are
+caught by the process itself rather than by the user re-testing and re-reporting.
+Going forward: any new feature gets its own live-tested verification before being
+marked done in the audit, not marked done on the strength of a local build succeeding.

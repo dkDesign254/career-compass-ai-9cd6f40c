@@ -144,22 +144,40 @@ of it called Lovable's proprietary AI gateway (`ai.gateway.lovable.dev`, needs a
 Lovable Cloud workspace), meaningless outside Lovable's infrastructure. Rewired all 6
 AI call sites to `src/lib/ai-model.server.ts`, which resolves a real key via the same
 Vault-backed `get_next_ai_key()` system built for G8, using Gemini's official
-OpenAI-compatible endpoint. Verified: both `/employability` and `/skill-gap` pages
-resolve correctly in production (200 OK). **Not fully verified**: an actual live AI
-call triggering a real Gemini response, this needs a real authenticated session to
-test, which wasn't achievable from this session's tooling. Log into the app as
-`demo.student@careerpilot-demo.io` and try the employability score page to confirm —
-if it errors, check `ai_provider_keys.last_error` for the gemini row first.
+OpenAI-compatible endpoint.
 
-**Separate issue found and partially unresolved: new standalone API route files
+**Verification history (three real bugs found via live user testing, all fixed):**
+1. Firecrawl (a scraping key, not an LLM) was leaking into the general LLM fallback
+   pool — `get_next_ai_key()` sometimes handed a Firecrawl key to a text-generation
+   call. Fixed by adding a `category` column (`llm` | `scraping`) and scoping the pool.
+2. Gemini's OpenAI-compatible endpoint doesn't actually support the `responseFormat`
+   structured-output feature despite Google's docs suggesting otherwise — confirmed via
+   a Vercel runtime log warning the user screenshotted directly. Replaced the
+   provider-specific structured-output path entirely with `generateStructured()`
+   (prompt-based JSON + Zod validation + one self-correcting retry), which doesn't
+   depend on any provider-specific feature.
+3. Gemini reliably returns numbers as quoted strings (`"85"` instead of `85`) in JSON
+   output despite explicit instructions not to. Fixed at the root with
+   `coerceNumericStrings()` inside `generateStructured()`, rather than patching each of
+   the 7 exposed numeric fields individually.
+
+**Current status: employability score, skill-gap analysis, and career recommendations
+have each been confirmed producing real, correctly-parsed AI output in production**
+(verified via user screenshots showing successful runs, not just "no error"). Resume
+ATS, cover letter, and interview kit share the exact same `generateStructured()` path
+and schema pattern but haven't been individually screenshotted — very likely fine,
+not yet independently confirmed.
+
+**Separate issue found, still unresolved: new standalone API route files
 (`src/routes/api/public/hooks/*.ts`) 404 in production even when correctly present in
 the build's route tree**, while page routes and the pre-existing `scrape-jobs.ts`
 route work fine. Tested with two differently-named fresh files, both 404'd
-consistently. Root cause not found — no Vercel build/routing log access this session.
-Doesn't block anything currently shipped (nothing new was added via this route type,
-the debug files were removed), but avoid adding new standalone API route files until
-this is understood, prefer TanStack Start server functions (proven working throughout
-the app) for any new server-side endpoint instead.
+consistently — though note this testing happened *during* the window when deployments
+were silently broken (see the `vercel.json` incident below), so this may not be a real
+bug at all; it should be retested now that deploys are confirmed healthy again before
+concluding anything. Avoid adding new standalone API route files until retested;
+prefer TanStack Start server functions (proven working throughout the app) for any new
+server-side endpoint in the meantime.
 
 **G2 — Certifications/courses library with real links.** Not built. You asked for a
 seeded library of actual real-world certifications, courses, diplomas, degrees with
@@ -251,6 +269,31 @@ issues from the security-advisor list as of this audit; re-run
 `Supabase:get_advisors(type=security)` after any schema change and log the result here.
 
 ---
+
+## Verification protocol (mandatory, learned the hard way this session)
+
+Three separate real bugs shipped and went unnoticed for a combined multi-day span
+before being caught, purely because "pushed to GitHub" and "builds locally" were
+mistaken for "actually working in production." Rule going forward, no exceptions:
+
+1. **After every push, confirm the deploy actually succeeded** — not just that it was
+   triggered. An HTTP 200 on a route is not sufficient proof; a stale build can return
+   200 for a route that existed before it went stale (this happened). Check response
+   *content* against something known to have just changed, or better, ask the user to
+   check the Vercel Deployments tab directly and confirm "Ready," not "Error."
+2. **Never claim an AI-dependent feature works without seeing a real run's output** —
+   not a schema that compiles, not a mocked response, an actual call that returned
+   real data. Server-side testing alone could not catch two of the three bugs this
+   session (Firecrawl leaking into the LLM pool, Gemini's responseFormat not actually
+   working, numbers arriving as strings) — all three needed a real authenticated
+   browser session and, in the end, the user's own Vercel log screenshots to diagnose.
+3. **When something is fixed reactively from a user's bug report, ask: does this class
+   of bug affect anything else already shipped?** The numeric-string coercion bug was
+   caught in one field (fit_score) but grepping found 7 identical exposures across 3
+   other features — fixed once at the root instead of waiting for 6 more bug reports.
+4. **Treat Vercel dashboard screenshots (Deployments tab status, Logs tab with actual
+   runtime errors) as the ground truth over any indirect testing** — they were more
+   useful for real diagnosis this session than every other tool combined.
 
 ## How to keep this file honest (rule for every future session)
 
