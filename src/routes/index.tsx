@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
@@ -54,6 +55,23 @@ function Landing() {
     staleTime: 5 * 60_000,
   });
 
+  // The landing page previously always showed "Log in / Sign up," which made
+  // an already-authenticated visitor look logged out the moment they came
+  // back to "/". Supabase's session persists fine in localStorage regardless
+  // — this component just never checked it. Reflect real session state.
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+  useEffect(() => {
+    let active = true;
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data }) => { if (active) setIsAuthed(!!data.session); });
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (active) setIsAuthed(!!session);
+      });
+      return () => sub.subscription.unsubscribe();
+    });
+    return () => { active = false; };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav, Handshake style */}
@@ -70,12 +88,20 @@ function Landing() {
             <a href="#categories" className="transition-colors hover:text-accent">Explore</a>
             <a href="#employers" className="transition-colors hover:text-accent">Employers</a>
             <a href="#pillars" className="transition-colors hover:text-accent">For students</a>
-            <Link to="/auth" className="transition-colors hover:text-accent">Sign in</Link>
+            {isAuthed === false && <Link to="/auth" className="transition-colors hover:text-accent">Sign in</Link>}
           </nav>
           <div className="flex items-center gap-2">
             <RegionLanguageSwitcher className="hidden lg:flex" />
-            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex"><Link to="/auth">Log in</Link></Button>
-            <Button asChild size="sm" className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent/90"><Link to="/auth">Sign up free</Link></Button>
+            {isAuthed ? (
+              <Button asChild size="sm" className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent/90">
+                <Link to="/dashboard">Go to dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex"><Link to="/auth">Log in</Link></Button>
+                <Button asChild size="sm" className="rounded-full bg-accent px-5 text-accent-foreground hover:bg-accent/90"><Link to="/auth">Sign up free</Link></Button>
+              </>
+            )}
           </div>
         </div>
       </header>

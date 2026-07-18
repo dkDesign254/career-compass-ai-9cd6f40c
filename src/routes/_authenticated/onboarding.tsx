@@ -32,6 +32,25 @@ type Form = {
 
 const STEPS = ["Goals", "Skills", "Education", "Experience", "Review"] as const;
 
+// Education records in the database (from seed data and other write paths)
+// use { school, degree, field, year } — but this form's local shape has
+// always been { institution, qualification, year }. Casting the raw record
+// straight into the form's shape (as this code used to do) silently
+// produced an object with none of the expected keys, all reading as
+// undefined, and controlled inputs bound to those undefined values in turn
+// threw a hard render crash caught by the router's error boundary — the
+// "This page didn't load" the user hit going from Skills to Education.
+// Accept either shape defensively so this can't happen again regardless of
+// which write path produced the record.
+function mapEducationRecord(raw: Record<string, unknown>): Form["education"] {
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  return {
+    institution: str(raw.institution) || str(raw.school),
+    qualification: str(raw.qualification) || str(raw.degree),
+    year: str(raw.year),
+  };
+}
+
 function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -66,7 +85,7 @@ function Onboarding() {
           skills: Array.isArray(data.skills) ? (data.skills as string[]) : [],
           education:
             Array.isArray(data.education) && data.education[0]
-              ? (data.education[0] as Form["education"])
+              ? mapEducationRecord(data.education[0] as Record<string, unknown>)
               : f.education,
           work_history:
             Array.isArray(data.work_history) && data.work_history[0]
