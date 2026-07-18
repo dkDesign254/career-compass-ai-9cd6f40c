@@ -13,6 +13,7 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
         }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { scrapeJobsFromUrl } = await import("@/lib/scrape.server");
+        const runStartedAt = new Date().toISOString();
         const { data: sources } = await supabaseAdmin
           .from("job_sources")
           .select("*")
@@ -73,7 +74,47 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
           });
         }
 
-        return Response.json({ ok: true, results: summary });
+        // created_at defaults to now() and is never included in the upsert
+        // payload above, so it only changes for rows that were genuinely
+        // INSERTed this run — an updated existing row keeps its original
+        // created_at. That's the real signal for "actually new," not just
+        // "touched by this scrape."
+        const { data: newlyInsertedJobs } = await supabaseAdmin
+          .from("jobs")
+          .select("id, title")
+          .eq("status", "open")
+          .gte("created_at", runStartedAt);
+
+        let notificationsCreated = 0;
+        if (newlyInsertedJobs && newlyInsertedJobs.length > 0) {
+          const { data: profiles } = await supabaseAdmin
+            .from("career_profiles")
+            .select("user_id, target_role, industry");
+          const notifRows: any[] = [];
+          for (const p of profiles ?? []) {
+            if (!p.target_role && !p.industry) continue;
+            const roleWord = (p.target_role ?? "").split(" ")[0]?.toLowerCase();
+            const matchCount = newlyInsertedJobs.filter((j: any) =>
+              (roleWord && j.title?.toLowerCase().includes(roleWord)),
+            ).length;
+            if (matchCount > 0) {
+              notifRows.push({
+                user_id: p.user_id,
+                type: "new_jobs",
+                title: `${matchCount} new job${matchCount === 1 ? "" : "s"} match your profile`,
+                body: `New listings matching "${p.target_role}" were just added to the board.`,
+                link: "/jobs",
+                read: false,
+              });
+            }
+          }
+          if (notifRows.length > 0) {
+            await supabaseAdmin.from("notifications").insert(notifRows);
+            notificationsCreated = notifRows.length;
+          }
+        }
+
+        return Response.json({ ok: true, results: summary, new_jobs: newlyInsertedJobs?.length ?? 0, notifications_created: notificationsCreated });
       },
     },
   },

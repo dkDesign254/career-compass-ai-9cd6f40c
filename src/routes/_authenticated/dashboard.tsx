@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { Briefcase, MapPin, Sparkles, Bell, FileText, Compass, ArrowRight, Building2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { getDashboardFeed } from "@/lib/feed.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -21,10 +23,21 @@ function timeAgo(iso: string) {
 
 function Dashboard() {
   const fn = useServerFn(getDashboardFeed);
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["dashboard-feed"], queryFn: () => fn(), staleTime: 30_000 });
   const jobs = data?.jobs ?? [];
   const apps = data?.applications ?? [];
   const notes = data?.notifications ?? [];
+
+  useEffect(() => {
+    const unreadIds = notes.filter((n: any) => !n.read).map((n: any) => n.id);
+    if (unreadIds.length === 0) return;
+    supabase.from("notifications").update({ read: true }).in("id", unreadIds).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["unread-notifications"] });
+    });
+    // Only run once per fetched batch of notifications, not on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.notifications]);
   const profile = data?.profile;
   const targetRole = profile?.target_role;
 
@@ -144,7 +157,7 @@ function Dashboard() {
             ) : (
               <ul className="space-y-2">
                 {notes.map((n: any) => (
-                  <li key={n.id} className={`rounded-md border p-3 text-sm ${n.read_at ? "opacity-70" : ""}`}>
+                  <li key={n.id} className={`rounded-md border p-3 text-sm ${n.read ? "opacity-70" : ""}`}>
                     <p className="font-medium">{n.title}</p>
                     {n.body && <p className="text-xs text-muted-foreground">{n.body}</p>}
                     <p className="mt-1 text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</p>

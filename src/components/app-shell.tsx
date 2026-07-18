@@ -40,6 +40,15 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const rolesFn = useServerFn(getMyRoles);
   const { data: roles } = useQuery({ queryKey: ["my-roles"], queryFn: () => rolesFn(), staleTime: 60_000 });
+  const { data: unreadCount } = useQuery({
+    queryKey: ["unread-notifications"],
+    queryFn: async () => {
+      const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true }).eq("read", false);
+      return count ?? 0;
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
   const isRecruiter = (roles ?? []).some((r) => ["recruiter", "company_admin", "admin"].includes(r));
   const isAdmin = (roles ?? []).includes("admin");
   const nav = [
@@ -114,8 +123,13 @@ export function AppShell({ children }: { children?: ReactNode }) {
           <div className="flex items-center gap-1">
             <RegionLanguageSwitcher className="hidden sm:flex" />
             <HelpButton />
-            <Button variant="ghost" size="icon" aria-label="Notifications">
+            <Button variant="ghost" size="icon" aria-label="Notifications" className="relative" onClick={() => navigate({ to: "/dashboard" })}>
               <Bell className="h-4 w-4" />
+              {!!unreadCount && unreadCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </Button>
             <ThemeToggle />
           </div>

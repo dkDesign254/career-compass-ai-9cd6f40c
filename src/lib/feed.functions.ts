@@ -20,7 +20,7 @@ export const getDashboardFeed = createServerFn({ method: "GET" })
         .limit(6),
       supabase
         .from("notifications")
-        .select("id, title, body, created_at, read_at")
+        .select("id, title, body, link, type, created_at, read")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(6),
