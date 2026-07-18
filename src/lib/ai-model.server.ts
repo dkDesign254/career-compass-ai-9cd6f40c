@@ -58,6 +58,26 @@ export async function getAiModel() {
 // feature, then parses and validates it with the given Zod schema. Retries
 // once with the validation error fed back to the model if the first
 // attempt doesn't parse or doesn't match the schema.
+// Recursively walks a parsed JSON value and converts any string that looks
+// exactly like a number ("85", "3.5") into an actual number. Leaves
+// non-numeric strings, booleans, nulls, etc. untouched. This is applied
+// before schema validation so a model's habit of quoting numbers doesn't
+// fail an otherwise-correct response.
+function coerceNumericStrings(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(coerceNumericStrings);
+  if (value !== null && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = coerceNumericStrings(v);
+    }
+    return out;
+  }
+  if (typeof value === "string" && value.trim() !== "" && !Number.isNaN(Number(value))) {
+    return Number(value);
+  }
+  return value;
+}
+
 export async function generateStructured<T>(params: {
   model: any;
   schema: z.ZodType<T>;
@@ -87,7 +107,12 @@ export async function generateStructured<T>(params: {
     } catch {
       throw new Error("Response was not valid JSON.");
     }
-    const result = params.schema.safeParse(parsed);
+    // Gemini's JSON output frequently stringifies numbers ("85" instead of
+    // 85) even when explicitly asked for raw JSON. Coerce numeric-looking
+    // strings back to numbers before validating, rather than failing valid
+    // data over a formatting quirk.
+    const coerced = coerceNumericStrings(parsed);
+    const result = params.schema.safeParse(coerced);
     if (!result.success) {
       throw new Error(`Response did not match the expected structure: ${result.error.message}`);
     }
