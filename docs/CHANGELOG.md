@@ -378,3 +378,23 @@ error — not a new bug, just needed manual reset after the underlying cause was
 **Process going forward, per explicit user direction:** move through the remaining
 G-gaps faster and broader rather than continuing single-feature reliability loops;
 consolidate testing to batched checkpoints rather than a screenshot-per-fix cycle.
+
+## 2026-07-18 (continued) — G20 and G23 shipped
+
+Moving faster through remaining gaps per explicit user direction. Shipped without a
+back-and-forth testing cycle for these two (both are low-risk, self-contained UI
+changes, verified via local build success rather than live screenshot testing —
+appropriate given how self-contained and low-risk they are, unlike the AI-wiring
+bugs which needed live verification):
+- **G20**: full 195-country ISO list (via `Intl.DisplayNames`) with search, replacing
+  the 10-country curated list; language list expanded 6 → 35. Country-to-language
+  auto-suggestion (selecting Kenya prompts English/Swahili specifically) not yet done.
+- **G23**: dark/light mode toggle now on the public landing page, previously only
+  available inside the authenticated app.
+
+Remaining open gaps: G2 (real certifications tied into a roadmap), G6, G7 (career
+roadmap, mentor/community links — need real curated data), G11-G17 (LinkedIn-style
+profile, OAuth sign-in, job alerts, resume management UI, applications tracking/
+analytics), G18-G19 (already partially done — certifications library exists, general
+career-path library does not), G21-G22 (help redesign, notifications), G24-G27
+(another design pass, WordPress-style CMS, social features, periodic survey review).

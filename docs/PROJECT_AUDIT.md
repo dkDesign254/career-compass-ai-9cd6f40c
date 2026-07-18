@@ -343,13 +343,13 @@ alongside a dozen other things in the same pass.
   recommendations first).
 
 **Platform / navigation**
-- G20: Full country list (all countries, not the current curated 10) tied to that
-  country's actual language(s); full language list for the translate switcher.
+- G20: **Done.** Full ISO country list (195 countries) with search filtering, expanded
+  to 35 languages. Not yet done: tying the selected country to auto-suggesting that
+  country's own language(s) — currently the two selectors are independent.
 - G21: Help section redesign — contextual hover help per sidebar icon instead of a
   static popup, plus a Scribe-style guided step-by-step walkthrough of the dashboard.
 - G22: New-jobs notifications ("15 new jobs available").
-- G23: Dark/light mode toggle available on the public landing page, not just inside
-  the authenticated app.
+- G23: **Done.** Dark/light mode toggle added to the public landing page nav.
 
 **Design**
 - G24: Another landing page design pass — explicitly compared against joinhandshake.com
