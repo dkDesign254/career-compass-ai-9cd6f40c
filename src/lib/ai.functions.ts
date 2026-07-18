@@ -81,7 +81,93 @@ function profileSummary(p: any) {
   ].join("\n");
 }
 
-/* ---------------- Quota status ---------------- */
+/* ---------------- Deterministic scoring (computed first, LLM narrates it) ----------------
+ * The employability score is NOT invented by the LLM. It's computed here from
+ * real signals — profile completeness, skill count, work history, certifications,
+ * education, and how the candidate's skills actually overlap with real,
+ * currently-open job postings in their target field. The LLM's only job
+ * afterward is to explain these already-computed numbers clearly, not decide
+ * what they are.
+ */
+async function computeEmployabilityScore(supabase: any, p: any) {
+  const skills: string[] = Array.isArray(p.skills) ? p.skills : [];
+  const education: any[] = Array.isArray(p.education) ? p.education : [];
+  const workHistory: any[] = Array.isArray(p.work_history) ? p.work_history : [];
+  const certifications: any[] = Array.isArray(p.certifications) ? p.certifications : [];
+
+  // Skills score: breadth (up to 10 skills counted) plus real market overlap
+  // against currently-open jobs in the same field.
+  const { data: relevantJobs } = await supabase
+    .from("jobs")
+    .select("skills")
+    .eq("status", "open")
+    .or(`title.ilike.%${(p.target_role ?? "").split(" ")[0] || "x"}%,industry.ilike.%${p.industry ?? "x"}%`)
+    .limit(40);
+  const marketSkillCounts = new Map<string, number>();
+  for (const j of relevantJobs ?? []) {
+    for (const s of (j.skills as string[] | null) ?? []) {
+      marketSkillCounts.set(s.toLowerCase(), (marketSkillCounts.get(s.toLowerCase()) ?? 0) + 1);
+    }
+  }
+  const marketSkillSet = [...marketSkillCounts.keys()];
+  const skillsLower = skills.map((s) => s.toLowerCase());
+  const matchedMarketSkills = marketSkillSet.filter((ms) => skillsLower.some((s) => s.includes(ms) || ms.includes(s)));
+  const marketOverlapRatio = marketSkillSet.length > 0 ? matchedMarketSkills.length / marketSkillSet.length : 0;
+  const breadthScore = Math.min(skills.length / 10, 1) * 100;
+  const skillsScore = Math.round(breadthScore * 0.5 + marketOverlapRatio * 100 * 0.5);
+
+  // Experience score: work history entries, weighted by experience_level claimed.
+  const levelBaseline: Record<string, number> = { student: 20, entry: 35, mid: 55, senior: 75 };
+  const base = levelBaseline[p.experience_level] ?? 30;
+  const historyBonus = Math.min(workHistory.length * 12, 40);
+  const experienceScore = Math.min(base + historyBonus, 100);
+
+  // Education score: presence + recency-agnostic completeness (has institution + qualification).
+  const educationScore = education.length > 0
+    ? (education.some((e: any) => (e.institution || e.school) && (e.qualification || e.degree)) ? 85 : 50)
+    : 20;
+
+  // Market fit: how many currently-open jobs in this field exist at all, and
+  // how many of those the candidate's skills meaningfully overlap with.
+  const jobCount = relevantJobs?.length ?? 0;
+  const strongMatches = (relevantJobs ?? []).filter((j: any) => {
+    const jobSkills = ((j.skills as string[] | null) ?? []).map((s) => s.toLowerCase());
+    if (jobSkills.length === 0) return false;
+    const overlap = jobSkills.filter((js) => skillsLower.some((s) => s.includes(js) || js.includes(s)));
+    return overlap.length / jobSkills.length >= 0.4;
+  }).length;
+  const marketFitScore = jobCount > 0 ? Math.round(Math.min((strongMatches / jobCount) * 150, 100)) : 40;
+
+  // Certifications act as a small, capped bonus layered onto the overall score,
+  // not a separate breakdown bucket (keeps the 4-part breakdown stable).
+  const certBonus = Math.min(certifications.length * 3, 10);
+
+  const overall = Math.round(
+    skillsScore * 0.3 + experienceScore * 0.3 + educationScore * 0.2 + marketFitScore * 0.2 + certBonus,
+  );
+
+  return {
+    score: Math.min(overall, 100),
+    breakdown: {
+      skills: skillsScore,
+      experience: experienceScore,
+      education: educationScore,
+      market_fit: marketFitScore,
+    },
+    computed_facts: {
+      skill_count: skills.length,
+      matched_market_skills: matchedMarketSkills,
+      market_skills_considered: marketSkillSet.length,
+      open_jobs_in_field: jobCount,
+      strong_job_matches: strongMatches,
+      work_history_entries: workHistory.length,
+      certifications_count: certifications.length,
+      has_education: education.length > 0,
+    },
+  };
+}
+
+
 
 export const getQuotaStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -111,13 +197,6 @@ export const getQuotaStatus = createServerFn({ method: "GET" })
 /* ---------------- Employability score ---------------- */
 
 const EmployabilitySchema = z.object({
-  score: z.number().min(0).max(100).describe("Overall employability score 0-100"),
-  breakdown: z.object({
-    skills: z.number().min(0).max(100),
-    experience: z.number().min(0).max(100),
-    education: z.number().min(0).max(100),
-    market_fit: z.number().min(0).max(100),
-  }),
   strengths: z.array(z.string()).max(5),
   weaknesses: z.array(z.string()).max(5),
   next_actions: z.array(z.string()).max(5),
@@ -130,17 +209,21 @@ export const scoreEmployability = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const profile = await loadProfile(supabase, userId);
     await checkAndConsumeQuota(supabase, userId, "employability");
+
+    // Compute the actual score first — this is math, not an LLM guess.
+    const computed = await computeEmployabilityScore(supabase, profile);
+
     const { provider, model } = await getAiModel();
     try {
-      const aiOutput = await generateStructured({
+      const narrative = await generateStructured({
         model,
         schema: EmployabilitySchema,
         system:
-          "You are an expert career coach. Produce an honest, evidence-based employability assessment for the candidate based on the profile they provide. Be specific and constructive.",
-        prompt: `Candidate profile:\n${profileSummary(profile)}`,
+          "You are an expert career coach. You are given an ALREADY-COMPUTED employability score and its breakdown — do not invent or contradict these numbers. Your job is only to explain them: name concrete strengths and weaknesses evidenced by the candidate's actual profile, and give specific, actionable next steps. Be honest and constructive, not generic.",
+        prompt: `Candidate profile:\n${profileSummary(profile)}\n\nComputed score: ${computed.score}/100\nBreakdown: skills ${computed.breakdown.skills}, experience ${computed.breakdown.experience}, education ${computed.breakdown.education}, market fit ${computed.breakdown.market_fit}\n\nSupporting facts behind these numbers: ${JSON.stringify(computed.computed_facts)}`,
       });
       await reportAiResult(provider, true);
-      const result = aiOutput;
+      const result = { ...computed, ...narrative };
       await supabase
         .from("career_profiles")
         .update({ recommendations: { ...(profile.recommendations ?? {}), employability: result } })
