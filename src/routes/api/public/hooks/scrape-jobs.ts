@@ -101,7 +101,7 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
               notifRows.push({
                 user_id: p.user_id,
                 type: "new_jobs",
-                title: `${matchCount} new job${matchCount === 1 ? "" : "s"} match your profile`,
+                title: `${matchCount} new job${matchCount === 1 ? " matches" : "s match"} your profile`,
                 body: `New listings matching "${p.target_role}" were just added to the board.`,
                 link: "/jobs",
                 read: false,
