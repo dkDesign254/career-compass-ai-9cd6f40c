@@ -325,8 +325,12 @@ alongside a dozen other things in the same pass.
   new LinkedIn/GitHub OAuth app registration.
 
 **Jobs & applications**
-- G14: Personalized job-alert preferences (e.g. "notify me about consulting or design
-  roles") + notification delivery when matching jobs appear.
+- G14: **Done, verified end to end.** New Job Alerts card on the profile page —
+  keyword chips, work-mode filters, on/off toggle. Wired into the real scraper
+  notification logic (shared with G22): matches new jobs against both target_role
+  and explicit keyword alerts, deduped to one notification per user. Verified by
+  setting a real preference, triggering the scraper, and confirming the correct
+  notification landed with the right wording — then cleaned up the test data.
 - G15: **Done.** "Your resumes" history list on the resume page — title, date, target
   role, score for every past ATS run; clicking one loads its saved analysis. Also
   found and fixed a real bug in the process: `resumes.title` is `NOT NULL` but the

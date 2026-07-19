@@ -446,3 +446,14 @@ status badge; logged honestly as not done rather than glossed over.
 New `career_paths` table: 14 real career fields (real descriptions, genuine entry-level
 job titles, core skills, typical progression), same pattern as the certifications
 library — always visible on the recommendations page, no AI run required first.
+
+## 2026-07-18 (continued) — G14 shipped and verified end to end
+
+New `job_alert_preferences` table + Job Alerts card on the profile page (keywords,
+work-mode filters, on/off toggle). Wired into the same notification logic built for
+G22 — matches new jobs against a user's explicit keyword alerts in addition to their
+target_role, deduped to one combined notification per user rather than two separate
+ones. **Verified with a real end-to-end test**: set a live preference for the demo
+student ("engineer", "developer"), triggered the scraper against production, confirmed
+the correct notification landed ("1 new job matches your alerts... matching 'engineer',
+'developer'"), then cleaned up the test data.
