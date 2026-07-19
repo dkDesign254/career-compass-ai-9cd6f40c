@@ -12,8 +12,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { getMyRoles } from "@/lib/jobs.functions";
 import { becomeRecruiter } from "@/lib/recruiter.functions";
 import { previewProfileImport, applyProfileImport } from "@/lib/profile-import.functions";
+import { getJobAlertPreferences, saveJobAlertPreferences } from "@/lib/job-alerts.functions";
 import { Badge } from "@/components/ui/badge";
-import { Download, Sparkles, Github, Globe } from "lucide-react";
+import { Download, Sparkles, Github, Globe, Bell, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — CareerPilot AI" }] }),
@@ -167,6 +168,7 @@ function ProfilePage() {
             )}
           </CardContent>
         </Card>
+        <JobAlertsCard />
         <Card>
           <CardHeader><CardTitle>Roles & access</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -183,5 +185,102 @@ function ProfilePage() {
         </Card>
       </div>
     </AppShell>
+  );
+}
+const WORK_MODES = ["remote", "hybrid", "onsite"] as const;
+
+function JobAlertsCard() {
+  const getFn = useServerFn(getJobAlertPreferences);
+  const saveFn = useServerFn(saveJobAlertPreferences);
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ["job-alert-prefs"], queryFn: () => getFn() });
+
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [modes, setModes] = useState<string[]>([]);
+  const [enabled, setEnabled] = useState(true);
+  const [kwInput, setKwInput] = useState("");
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (data && !loaded) {
+      setKeywords(data.keywords ?? []);
+      setModes(data.work_modes ?? []);
+      setEnabled(data.enabled ?? true);
+      setLoaded(true);
+    }
+  }, [data, loaded]);
+
+  const save = useMutation({
+    mutationFn: () => saveFn({ data: { keywords, work_modes: modes as any, enabled } }),
+    onSuccess: () => { toast.success("Job alerts saved"); qc.invalidateQueries({ queryKey: ["job-alert-prefs"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const addKeyword = () => {
+    const v = kwInput.trim();
+    if (v && !keywords.includes(v) && keywords.length < 15) {
+      setKeywords([...keywords, v]);
+      setKwInput("");
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Bell className="h-4 w-4 text-accent" /> Job alerts</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Get notified when new listings match specific interests — e.g. "consulting," "design," or "remote" —
+          separate from your main target role on your career profile.
+        </p>
+        <div className="space-y-2">
+          <Label>Keywords to watch for</Label>
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-input p-2">
+            {keywords.map((k) => (
+              <Badge key={k} variant="secondary" className="gap-1">
+                {k}
+                <button onClick={() => setKeywords(keywords.filter((x) => x !== k))} aria-label={`Remove ${k}`}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+            <input
+              value={kwInput}
+              onChange={(e) => setKwInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addKeyword(); }
+              }}
+              placeholder="Add a keyword and press Enter"
+              className="flex-1 min-w-[140px] bg-transparent text-sm outline-none"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Work mode</Label>
+          <div className="flex gap-2">
+            {WORK_MODES.map((m) => (
+              <Button
+                key={m}
+                type="button"
+                size="sm"
+                variant={modes.includes(m) ? "default" : "outline"}
+                onClick={() => setModes(modes.includes(m) ? modes.filter((x) => x !== m) : [...modes, m])}
+              >
+                {m}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <Button variant={enabled ? "default" : "outline"} size="sm" onClick={() => setEnabled(!enabled)}>
+            Alerts {enabled ? "on" : "off"}
+          </Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            {save.isPending ? "Saving…" : "Save alert preferences"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

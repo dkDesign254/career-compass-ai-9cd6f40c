@@ -87,27 +87,46 @@ export const Route = createFileRoute("/api/public/hooks/scrape-jobs")({
 
         let notificationsCreated = 0;
         if (newlyInsertedJobs && newlyInsertedJobs.length > 0) {
-          const { data: profiles } = await supabaseAdmin
-            .from("career_profiles")
-            .select("user_id, target_role, industry");
-          const notifRows: any[] = [];
+          const [{ data: profiles }, { data: alertPrefs }] = await Promise.all([
+            supabaseAdmin.from("career_profiles").select("user_id, target_role, industry"),
+            supabaseAdmin.from("job_alert_preferences").select("user_id, keywords, work_modes").eq("enabled", true),
+          ]);
+
+          // user_id -> { count, reasons: string[] } so a user with both a
+          // matching target_role AND a matching keyword alert gets ONE
+          // notification, not two.
+          const perUser = new Map<string, { count: number; reasons: Set<string> }>();
+          const bump = (userId: string, count: number, reason: string) => {
+            const cur = perUser.get(userId) ?? { count: 0, reasons: new Set<string>() };
+            cur.count = Math.max(cur.count, count);
+            cur.reasons.add(reason);
+            perUser.set(userId, cur);
+          };
+
           for (const p of profiles ?? []) {
-            if (!p.target_role && !p.industry) continue;
-            const roleWord = (p.target_role ?? "").split(" ")[0]?.toLowerCase();
-            const matchCount = newlyInsertedJobs.filter((j: any) =>
-              (roleWord && j.title?.toLowerCase().includes(roleWord)),
-            ).length;
-            if (matchCount > 0) {
-              notifRows.push({
-                user_id: p.user_id,
-                type: "new_jobs",
-                title: `${matchCount} new job${matchCount === 1 ? " matches" : "s match"} your profile`,
-                body: `New listings matching "${p.target_role}" were just added to the board.`,
-                link: "/jobs",
-                read: false,
-              });
-            }
+            if (!p.target_role) continue;
+            const roleWord = p.target_role.split(" ")[0]?.toLowerCase();
+            const matches = newlyInsertedJobs.filter((j: any) => roleWord && j.title?.toLowerCase().includes(roleWord));
+            if (matches.length > 0) bump(p.user_id, matches.length, `"${p.target_role}"`);
           }
+
+          for (const alert of alertPrefs ?? []) {
+            const keywords: string[] = Array.isArray(alert.keywords) ? alert.keywords : [];
+            if (keywords.length === 0) continue;
+            const matches = newlyInsertedJobs.filter((j: any) =>
+              keywords.some((kw) => j.title?.toLowerCase().includes(kw.toLowerCase())),
+            );
+            if (matches.length > 0) bump(alert.user_id, matches.length, keywords.map((k) => `"${k}"`).join(", "));
+          }
+
+          const notifRows = [...perUser.entries()].map(([user_id, { count, reasons }]) => ({
+            user_id,
+            type: "new_jobs",
+            title: `${count} new job${count === 1 ? " matches" : "s match"} your alerts`,
+            body: `New listings matching ${[...reasons].join(" and ")} were just added to the board.`,
+            link: "/jobs",
+            read: false,
+          }));
           if (notifRows.length > 0) {
             await supabaseAdmin.from("notifications").insert(notifRows);
             notificationsCreated = notifRows.length;
