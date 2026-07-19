@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Sparkles, FileText, MessageSquare } from "lucide-react";
+import { Sparkles, FileText, MessageSquare, Compass, ChevronDown, ChevronUp } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,20 +14,79 @@ import { Badge } from "@/components/ui/badge";
 import { AiError } from "@/components/ai-error";
 import { Header, LoadingCard } from "./employability";
 import { recommendCareers, generateCoverLetter, generateInterviewKit } from "@/lib/ai.functions";
+import { listCareerPaths } from "@/lib/certifications.functions";
 
 export const Route = createFileRoute("/_authenticated/recommendations")({
   head: () => ({ meta: [{ title: "Recommendations — CareerPilot AI" }] }),
   component: RecommendationsPage,
 });
 
+function CareerPathLibrary() {
+  const fn = useServerFn(listCareerPaths);
+  const { data, isLoading } = useQuery({ queryKey: ["career-paths"], queryFn: () => fn() });
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const paths = data ?? [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base"><Compass className="h-4 w-4 text-accent" /> Explore career fields</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {paths.map((p: any) => {
+              const isOpen = expanded === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setExpanded(isOpen ? null : p.id)}
+                  className={`rounded-xl border p-4 text-left transition-colors hover:border-accent/40 ${isOpen ? "border-accent bg-accent/5 sm:col-span-2" : "border-border"}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">{p.title}</h3>
+                    {isOpen ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                  {isOpen && (
+                    <div className="mt-3 space-y-3 border-t border-border/60 pt-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entry-level titles</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {p.entry_titles?.map((t: string) => <Badge key={t} variant="outline">{t}</Badge>)}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Core skills</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {p.core_skills?.map((s: string) => <Badge key={s} variant="secondary">{s}</Badge>)}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Typical progression</p>
+                        <p className="mt-1 text-sm">{p.typical_progression?.join(" → ")}</p>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function RecommendationsPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
-        <Header icon={<Sparkles className="h-5 w-5" />} title="Career recommendations" desc="AI-generated career paths, cover letters, and interview prep — built on your profile." />
+        <Header icon={<Sparkles className="h-5 w-5" />} title="Career recommendations" desc="Explore real career fields below, or generate a personalized breakdown, cover letters, and interview prep built on your profile." />
+        <CareerPathLibrary />
         <Tabs defaultValue="paths">
           <TabsList>
-            <TabsTrigger value="paths">Career paths</TabsTrigger>
+            <TabsTrigger value="paths">Personalized paths</TabsTrigger>
             <TabsTrigger value="cover">Cover letter</TabsTrigger>
             <TabsTrigger value="interview">Interview prep</TabsTrigger>
           </TabsList>

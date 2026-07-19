@@ -11,3 +11,12 @@ export const listCertifications = createServerFn({ method: "GET" })
     ]);
     return { certifications: certs ?? [], userField: profile?.industry ?? null };
   });
+
+export const listCareerPaths = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context as any;
+    const { data, error } = await supabase.from("career_paths").select("*").order("title", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
