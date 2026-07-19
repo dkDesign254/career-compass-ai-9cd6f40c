@@ -305,6 +305,20 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
     }
   });
 
+/* ---------------- Resume history ---------------- */
+export const listMyResumes = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    const { data, error } = await supabase
+      .from("resumes")
+      .select("id, title, file_name, target_role, ats_score, analysis, is_primary, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 /* ---------------- Resume / ATS ---------------- */
 
 const ResumeSchema = z.object({
@@ -344,6 +358,7 @@ export const optimizeResume = createServerFn({ method: "POST" })
         .from("resumes")
         .insert({
           user_id: userId,
+          title: data.target_role ? `Resume — ${data.target_role}` : `Resume ${new Date().toLocaleDateString()}`,
           raw_text: data.resume_text,
           target_role: data.target_role ?? null,
           ats_score: result.ats_score,
