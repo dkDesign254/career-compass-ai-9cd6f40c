@@ -422,3 +422,21 @@ a clean build:**
   generated and worded for matching users. Caught and fixed a subject-verb agreement
   bug ("1 new job match" → "1 new job matches") from the real output. Test
   notifications cleaned up after confirming.
+
+## 2026-07-18 (continued) — G15 and G16/G17 shipped
+
+**G15 (resume history)**: found another real bug while building this —
+`resumes.title` is `NOT NULL` in the schema but `optimizeResume()`'s insert never set
+it. This means the resume ATS feature would have hard-failed on insert for any real
+user's first analysis (the seeded demo resumes worked only because I set title
+directly via SQL when seeding). Fixed. Also shipped the actual UI the user asked for:
+a "Your resumes" history list showing every past ATS run with title, date, target
+role, and score, clicking one loads that saved analysis instead of the page always
+starting blank.
+
+**G16/G17 (applications)**: job titles in the applications list now link to the job
+detail page. Added a real analytics summary — total applications, active count,
+response rate, average days-to-response — computed from actual data, not fabricated.
+Not done: distinguishing external vs. in-app applications, and the visual step-by-step
+status timeline the user specifically asked for ("I call it a map") — currently just a
+status badge; logged honestly as not done rather than glossed over.

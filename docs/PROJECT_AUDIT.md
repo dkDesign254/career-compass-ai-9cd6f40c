@@ -327,12 +327,17 @@ alongside a dozen other things in the same pass.
 **Jobs & applications**
 - G14: Personalized job-alert preferences (e.g. "notify me about consulting or design
   roles") + notification delivery when matching jobs appear.
-- G15: Resume management UI — list of uploaded resumes with scores, click into a full
-  ATS analysis panel showing when it was run and against which job.
-- G16: LinkedIn-style application tracking view, including applications made outside
-  the app (link out to the original site) vs. inside the app (full detail + status
-  timeline/"map").
-- G17: Applications analytics dashboard (volume applied, response rate, time-to-response).
+- G15: **Done.** "Your resumes" history list on the resume page — title, date, target
+  role, score for every past ATS run; clicking one loads its saved analysis. Also
+  found and fixed a real bug in the process: `resumes.title` is `NOT NULL` but the
+  insert never set it, meaning the ATS feature would have hard-failed for any real
+  (non-seeded) user's first upload.
+- G16: **Partially done.** Job titles in the applications list now link to the job
+  detail page. Not done: distinguishing/linking applications made outside the app
+  (external source sites) vs. inside it, and the visual step-by-step status
+  "map"/timeline the user described — currently just a status badge.
+- G17: **Done.** Real applications analytics summary (total, active, response rate,
+  average days-to-response) — computed from actual application data, not placeholders.
 
 **Skill gap & recommendations**
 - G18: Skill-gap page redesign — a general, always-visible library of real
