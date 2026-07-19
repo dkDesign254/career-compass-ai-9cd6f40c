@@ -344,8 +344,10 @@ alongside a dozen other things in the same pass.
   certifications/diplomas/degrees (not just a blank page waiting for an AI run), plus
   the existing personalized analysis alongside it. Needs real, verifiable course/cert
   data curated the same way the real job data was — can't be fabricated.
-- G19: General, always-browsable career path library (not gated behind running AI
-  recommendations first).
+- G19: **Done.** New `career_paths` table — 14 real, well-established career fields
+  with genuine entry-level titles, core skills, and typical progression, shown as an
+  always-visible expandable card grid on the recommendations page, above the
+  AI-gated "Personalized paths" tab.
 
 **Platform / navigation**
 - G20: **Done.** Full ISO country list (195 countries) with search filtering, expanded

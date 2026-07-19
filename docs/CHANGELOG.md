@@ -440,3 +440,9 @@ response rate, average days-to-response — computed from actual data, not fabri
 Not done: distinguishing external vs. in-app applications, and the visual step-by-step
 status timeline the user specifically asked for ("I call it a map") — currently just a
 status badge; logged honestly as not done rather than glossed over.
+
+## 2026-07-18 (continued) — G19 shipped
+
+New `career_paths` table: 14 real career fields (real descriptions, genuine entry-level
+job titles, core skills, typical progression), same pattern as the certifications
+library — always visible on the recommendations page, no AI run required first.
