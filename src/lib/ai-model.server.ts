@@ -7,6 +7,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText } from "ai";
 import type { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export class NoAiProviderKeyError extends Error {
@@ -84,8 +85,19 @@ export async function generateStructured<T>(params: {
   system: string;
   prompt: string;
 }): Promise<T> {
+  // Root cause found via live production testing: previous versions of this
+  // function asked the model for "raw JSON" without ever telling it what
+  // shape that JSON needed to be — no field names, no nesting, nothing. The
+  // model was left to guess the structure purely from prose instructions,
+  // which works for simple schemas but reliably falls apart on anything with
+  // nested objects or arrays-of-objects (confirmed: real failures included
+  // arrays of objects coming back as arrays of plain strings, and vice
+  // versa). Generating the actual JSON Schema from the Zod schema and
+  // embedding it verbatim in the prompt gives the model an unambiguous spec
+  // to follow instead of a guess.
+  const jsonSchema = zodToJsonSchema(params.schema, { target: "openApi3" });
   const jsonInstruction =
-    "\n\nRespond with ONLY a single raw JSON object. No markdown code fences, no commentary before or after, just the JSON itself, starting with { and ending with }.";
+    `\n\nRespond with ONLY a single raw JSON object that strictly matches this JSON Schema — every field, exactly these names, exactly these types (arrays of objects must be arrays of objects, not arrays of strings; numbers must be numbers, not quoted strings):\n\n${JSON.stringify(jsonSchema)}\n\nNo markdown code fences, no commentary before or after — just the JSON object itself, starting with { and ending with }.`;
 
   const attempt = async (extraContext?: string) => {
     const { text } = await generateText({
