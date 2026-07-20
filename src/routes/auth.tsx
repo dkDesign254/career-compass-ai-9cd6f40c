@@ -2,14 +2,13 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Compass, Loader2 } from "lucide-react";
+import { Compass, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -37,16 +36,24 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    // Native Supabase OAuth — this replaces a call to Lovable's own hosted
+    // OAuth broker (@lovable.dev/cloud-auth-js), which only worked inside
+    // Lovable's own hosting and did nothing on this standalone deployment.
+    // Requires Google to actually be enabled as a provider in Supabase's
+    // Auth settings (Authentication → Providers → Google) with a real
+    // Client ID/Secret — this code path is correct, but won't do anything
+    // useful until that's configured on the Supabase side.
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}${redirect || "/dashboard"}` },
     });
-    if (result.error) {
-      toast.error("Google sign-in failed", { description: result.error.message });
+    if (error) {
+      toast.error("Google sign-in failed", { description: error.message });
       setLoading(false);
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: redirect || "/dashboard" });
+    // On success, Supabase redirects the browser away to Google immediately
+    // — no further code here runs. The session is picked up automatically
+    // when the browser lands back on this app.
   };
 
   return (
@@ -75,6 +82,10 @@ function AuthPage() {
             <EmailForm mode="signin" redirect={redirect} />
           </TabsContent>
           <TabsContent value="signup">
+            <p className="mt-4 rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
+              Free accounts get <span className="font-medium text-foreground">7 AI runs a day</span> (vs. 2 without one),
+              plus resume ATS scoring, skill-gap analysis, and a saved career profile.
+            </p>
             <EmailForm mode="signup" redirect={redirect} />
           </TabsContent>
         </Tabs>
@@ -105,13 +116,14 @@ function EmailForm({ mode, redirect }: { mode: "signin" | "signup"; redirect?: s
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [awaitingVerification, setAwaitingVerification] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -120,13 +132,26 @@ function EmailForm({ mode, redirect }: { mode: "signin" | "signup"; redirect?: s
           },
         });
         if (error) throw error;
-        toast.success("Account created. Welcome!");
+        if (data.session) {
+          // Email confirmation is off for this project — the account is
+          // active immediately, safe to continue straight in.
+          toast.success("Account created. Welcome!");
+          navigate({ to: redirect || "/dashboard" });
+        } else {
+          // Email confirmation is required — there's no session yet.
+          // Previously this navigated to /dashboard anyway, which is a
+          // route that requires an active session, so it would have shown
+          // the visitor a broken or logged-out screen right after telling
+          // them "Welcome." Show a clear, app-branded pending state instead
+          // of navigating anywhere.
+          setAwaitingVerification(true);
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Signed in.");
+        navigate({ to: redirect || "/dashboard" });
       }
-      navigate({ to: redirect || "/dashboard" });
     } catch (err) {
       toast.error(mode === "signup" ? "Sign-up failed" : "Sign-in failed", {
         description: err instanceof Error ? err.message : "Try again.",
@@ -144,6 +169,32 @@ function EmailForm({ mode, redirect }: { mode: "signin" | "signup"; redirect?: s
     if (error) toast.error(error.message);
     else toast.success("Password reset link sent.");
   };
+
+  const resend = async () => {
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    if (error) toast.error(error.message);
+    else toast.success("Verification email re-sent.");
+  };
+
+  if (awaitingVerification) {
+    return (
+      <div className="mt-6 space-y-4 rounded-lg border border-border bg-secondary/30 p-5 text-center">
+        <Mail className="mx-auto h-8 w-8 text-accent" />
+        <div>
+          <p className="font-medium">Verify your CareerPilot account</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We've sent a verification link to <span className="font-medium text-foreground">{email}</span>.
+            Open it to activate your account — then come back and sign in.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <button type="button" onClick={resend} className="underline hover:text-foreground">Resend email</button>
+          <span>·</span>
+          <button type="button" onClick={() => setAwaitingVerification(false)} className="underline hover:text-foreground">Back</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={submit} className="mt-4 space-y-4">

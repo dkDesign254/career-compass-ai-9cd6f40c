@@ -4,7 +4,11 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { getAiModel, reportAiResult, mapAiError, generateStructured } from "./ai-model.server";
 
-const FREE_QUOTA = 2;
+// Signed-up free users get 7 AI runs/day (the 2 anyone gets anonymously,
+// plus a 5-run bonus for creating an account). Anonymous (not signed in)
+// visitors get ANON_FREE_QUOTA, tracked per-device via anon_usage below.
+const FREE_QUOTA = 7;
+const ANON_FREE_QUOTA = 2;
 
 const QUOTA_TYPES = new Set([
   "employability",
@@ -17,8 +21,12 @@ const QUOTA_TYPES = new Set([
 
 type SupabaseClient = Awaited<ReturnType<typeof import("@/integrations/supabase/client").supabase.auth.getUser>> extends never ? never : any;
 
-function monthKey(d = new Date()) {
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
+// Reusing the ai_run_usage.period_month column to hold a specific day's date
+// rather than a month-truncated one — this switches quota tracking from
+// monthly to daily without a schema migration. The column name is now a
+// slight misnomer but functionally this is exact-day tracking.
+function dayKey(d = new Date()) {
+  return d.toISOString().slice(0, 10);
 }
 
 async function checkAndConsumeQuota(
@@ -37,7 +45,7 @@ async function checkAndConsumeQuota(
     .maybeSingle();
   if (sub && sub.tier && sub.tier !== "free") return;
 
-  const period = monthKey();
+  const period = dayKey();
   const { count, error: countErr } = await supabase
     .from("ai_run_usage")
     .select("id", { count: "exact", head: true })
@@ -46,7 +54,7 @@ async function checkAndConsumeQuota(
   if (countErr) throw new Error(countErr.message);
   if ((count ?? 0) >= FREE_QUOTA) {
     throw new Error(
-      `You've used your ${FREE_QUOTA} free AI runs this month. Upgrade to continue.`,
+      `You've used all ${FREE_QUOTA} of today's free AI runs. They reset tomorrow, or upgrade for unlimited access.`,
     );
   }
 
@@ -173,7 +181,7 @@ export const getQuotaStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context as any;
-    const period = monthKey();
+    const period = dayKey();
     const { count } = await supabase
       .from("ai_run_usage")
       .select("id", { count: "exact", head: true })
@@ -192,6 +200,71 @@ export const getQuotaStatus = createServerFn({ method: "GET" })
       isPaid,
       tier: sub?.tier ?? "free",
     };
+  });
+
+/* ---------------- Anonymous quick check (no account required) ----------------
+ * A deliberately limited, fully ephemeral version of the employability score
+ * for visitors who haven't signed up. Nothing is read from or written to
+ * career_profiles — the visitor types in their own basic info, gets a real
+ * computed score plus AI narrative back, and it's gone. Gated by a small
+ * per-device daily quota (see check_and_consume_anon_quota), separate from
+ * and smaller than the quota signed-up users get.
+ */
+const AnonInputSchema = z.object({
+  device_id: z.string().uuid(),
+  target_role: z.string().min(2).max(120),
+  industry: z.string().min(2).max(120),
+  experience_level: z.enum(["student", "entry", "mid", "senior"]),
+  skills: z.array(z.string().min(1).max(40)).min(1).max(20),
+});
+
+export const ANON_FREE_QUOTA_VALUE = ANON_FREE_QUOTA;
+
+export const runAnonEmployabilityCheck = createServerFn({ method: "POST" })
+  .inputValidator((i: unknown) => AnonInputSchema.parse(i))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error: quotaErr } = await supabaseAdmin.rpc("check_and_consume_anon_quota", {
+      _device_id: data.device_id,
+      _run_type: "employability_anon",
+      _daily_limit: ANON_FREE_QUOTA,
+    });
+    if (quotaErr) {
+      if (quotaErr.message?.includes("ANON_QUOTA_EXCEEDED")) {
+        throw new Error(
+          `You've used your ${ANON_FREE_QUOTA} free checks for today. Sign up free for ${FREE_QUOTA} runs a day instead of ${ANON_FREE_QUOTA} — plus resume ATS scoring, skill-gap analysis, saved career recommendations, and a profile recruiters can actually see.`,
+        );
+      }
+      throw new Error(quotaErr.message);
+    }
+
+    const pseudoProfile = {
+      target_role: data.target_role,
+      industry: data.industry,
+      experience_level: data.experience_level,
+      skills: data.skills,
+      education: [],
+      work_history: [],
+      certifications: [],
+    };
+    const computed = await computeEmployabilityScore(supabaseAdmin, pseudoProfile);
+
+    const { provider, model } = await getAiModel();
+    try {
+      const narrative = await generateStructured({
+        model,
+        schema: EmployabilitySchema,
+        system:
+          "You are an expert career coach. You are given an ALREADY-COMPUTED employability score and its breakdown — do not invent or contradict these numbers. This visitor has NOT created an account yet, so keep it encouraging but honest, and don't assume work history or education they haven't told you about. Explain the score: name concrete strengths and weaknesses, give specific next actions.",
+        prompt: `Quick profile (anonymous visitor, no account):\n${profileSummary(pseudoProfile)}\n\nComputed score: ${computed.score}/100\nBreakdown: skills ${computed.breakdown.skills}, experience ${computed.breakdown.experience}, education ${computed.breakdown.education}, market fit ${computed.breakdown.market_fit}\n\nSupporting facts: ${JSON.stringify(computed.computed_facts)}`,
+      });
+      await reportAiResult(provider, true);
+      return { ...computed, ...narrative };
+    } catch (err) {
+      await reportAiResult(provider, false, err instanceof Error ? err.message : String(err));
+      throw mapAiError(err);
+    }
   });
 
 /* ---------------- Employability score ---------------- */

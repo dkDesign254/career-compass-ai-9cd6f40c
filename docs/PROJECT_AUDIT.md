@@ -161,29 +161,39 @@ OpenAI-compatible endpoint.
    `coerceNumericStrings()` inside `generateStructured()`, rather than patching each of
    the 7 exposed numeric fields individually.
 
-**Current status: employability score, skill-gap analysis, and career recommendations
-have each been confirmed producing real, correctly-parsed AI output in production**
-(verified via user screenshots showing successful runs, not just "no error"). Resume
-ATS, cover letter, and interview kit share the exact same `generateStructured()` path
-and schema pattern but haven't been individually screenshotted — very likely fine,
-not yet independently confirmed.
+4. **The actual root cause, found last**: even after fixes 1-3, skill-gap and career
+   recommendations still failed in production (`required_skills` came back as an array
+   of plain strings instead of objects; `career_paths` came back missing required
+   fields with `upskilling`/`networking` as arrays of objects instead of strings) —
+   caught via user screenshots showing these specific validation errors. Root cause:
+   `generateStructured()` only ever told the model "respond with raw JSON," never the
+   actual shape — no field names, no nesting spec. That's fine for flat schemas (which
+   is why employability and resume ATS never failed) but unreliable the moment a
+   schema has nested objects or arrays-of-objects. Fixed by adding `zod-to-json-schema`
+   and embedding the real JSON Schema in the prompt so the model has an unambiguous
+   spec instead of a guess. **Verified with a live production test using the exact
+   previously-failing schema shape** — correct output, first attempt, no retry needed.
 
-**Separate issue found, still unresolved: new standalone API route files
-(`src/routes/api/public/hooks/*.ts`) 404 in production even when correctly present in
-the build's route tree**, while page routes and the pre-existing `scrape-jobs.ts`
-route work fine. Tested with two differently-named fresh files, both 404'd
-consistently — though note this testing happened *during* the window when deployments
-were silently broken (see the `vercel.json` incident below), so this may not be a real
-bug at all; it should be retested now that deploys are confirmed healthy again before
-concluding anything. Avoid adding new standalone API route files until retested;
-prefer TanStack Start server functions (proven working throughout the app) for any new
-server-side endpoint in the meantime.
+**Status: employability score, skill-gap analysis, and career recommendations are
+now genuinely confirmed working** — the JSON-schema-embedding fix (point 4) was tested
+live against production with the exact schema shape that had been failing, not
+inferred from an earlier partial fix. The earlier "confirmed working" claim in this
+file (based on user screenshots that turned out to only cover employability, not
+skill-gap or career-recs) was premature and is corrected here. Resume ATS, cover
+letter, and interview kit share the same `generateStructured()` path and should
+benefit from the same fix, but haven't been individually tested — say so if asked
+rather than assuming.
 
-**G2 — Certifications/courses library with real links.** Not built. You asked for a
-seeded library of actual real-world certifications, courses, diplomas, degrees with
-working application links and guidance, tied into the "guide map" feature below. This
-needs real data curation (can't be fabricated — must be genuine, verifiable
-certifications/courses per your explicit ask), so it is its own stage of work.
+**The standalone-API-route 404 issue noted earlier no longer reproduces.** A fresh
+standalone route (`ai-schema-check.ts`) was added, deployed, called successfully
+(200, correct response), and removed during this session's testing — the earlier 404s
+were very likely just symptoms of the `vercel.json` deployment breakage happening at
+the same time, not a real routing bug. Standalone API routes are fine to use.
+
+**G2 — Certifications/courses library with real links.** **Done** — shipped and
+tracked under G18 in §5's gap list below (21 real certifications with genuine issuers
+and URLs). Leaving this entry rather than deleting it since G2 and G18 refer to the
+same feature and future readers may look for either number.
 
 **G3 — AI coaching chatbot with nuance.** Partially addressed as a side effect of the
 G1 fix: career recommendations, resume ATS review, cover letter generation, and

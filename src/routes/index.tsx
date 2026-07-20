@@ -141,6 +141,10 @@ function Landing() {
               <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-accent" /><span><b className="text-foreground">1,200+</b> employers</span></div>
               <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-accent" /><span><b className="text-foreground">6 weeks</b> avg. to hire</span></div>
             </div>
+
+            <Link to="/try" className="group mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-accent/40 bg-accent/5 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10">
+              <Sparkles className="h-4 w-4" /> See your employability score free, no account needed <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
 
           <figure className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl ring-soft">
