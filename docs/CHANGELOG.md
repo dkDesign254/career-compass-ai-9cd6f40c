@@ -457,3 +457,48 @@ ones. **Verified with a real end-to-end test**: set a live preference for the de
 student ("engineer", "developer"), triggered the scraper against production, confirmed
 the correct notification landed ("1 new job matches your alerts... matching 'engineer',
 'developer'"), then cleaned up the test data.
+
+---
+
+## 2026-07-20 — Real auth bugs found and fixed via production logs; anonymous guest access shipped
+
+**Pulled real Supabase Auth logs and found 3 serious, confirmed bugs affecting real
+users right now:**
+1. Every confirmation email link points to `localhost:3000`, not production —
+   confirmed against real signups from real Kenyan IPs. Root cause is the Supabase
+   Auth "Site URL" dashboard setting (not app code, `emailRedirectTo` in the code was
+   already correct). Cannot fix via any available tool — needs a 2-minute dashboard
+   change, documented for the user with exact steps.
+2. Repeated `429: email rate limit exceeded` — Supabase's default email sender has a
+   very low cap and real people are hitting it. Same category, needs custom SMTP or a
+   rate-limit adjustment in the dashboard.
+3. Google sign-in went through `@lovable.dev/cloud-auth-js` (Lovable's own hosted
+   OAuth broker) — meaningless outside Lovable's infrastructure, same dead-dependency
+   pattern as the AI gateway fixed earlier. Replaced with native
+   `supabase.auth.signInWithOAuth()`. Still needs a real Google Client ID/Secret in
+   Supabase's Auth provider settings to work end to end.
+
+**Also found and fixed a real UX bug**: after signup, the app immediately navigated to
+`/dashboard` and said "Welcome!" even when email confirmation is required (confirmed
+from the logs) — meaning there's no session yet, so the user would hit a broken or
+logged-out dashboard right after being told they're in. Replaced with a proper,
+app-branded "Verify your CareerPilot account" pending screen (never mentions
+Supabase), with a resend-email option.
+
+**Shipped anonymous guest access, the actual feature requested**, per: "a new user
+does not need to sign up for basic functionalities... in order to gain extended 5 more
+daily uses... they would need to sign up."
+- New `anon_usage` table + `check_and_consume_anon_quota()` — device-ID-based (a UUID
+  generated client-side into localStorage), 2 free checks/day, protected by a
+  SECURITY DEFINER RPC with zero direct table grants so it can't be reset by clearing
+  rows client-side. Tested directly in SQL: 2 calls succeed, 3rd correctly blocked.
+- Raised the signed-up free tier from 2 runs/month to 7 runs/day (2 base + 5 signup
+  bonus) — reused the existing `ai_run_usage.period_month` column to hold a day-key
+  instead of a month-key, no new table needed for this part.
+- New public `/try` page: a real, working anonymous employability check. No account,
+  nothing saved to `career_profiles`. Ends with a specific, genuine value pitch (7
+  runs/day vs. 2, skill-gap analysis, resume ATS, cover letters, interview prep,
+  application tracking) rather than a generic "sign up now."
+- **Verified fully end to end against production**, not just built: real computed
+  score, real AI narrative, and confirmed the 3rd same-day call is correctly blocked
+  with the intended upsell message.
