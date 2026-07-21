@@ -502,3 +502,19 @@ daily uses... they would need to sign up."
 - **Verified fully end to end against production**, not just built: real computed
   score, real AI narrative, and confirmed the 3rd same-day call is correctly blocked
   with the intended upsell message.
+
+## 2026-07-21 — Confirmed: the localhost confirmation-link bug is fully fixed
+
+User updated Supabase's Authentication → URL Configuration (Site URL + Redirect URLs
+to the production domain) and enabled custom SMTP via Resend (no domain needed —
+using Resend's shared `onboarding@resend.dev` sender). Re-verified via a real
+generated confirmation link through the Admin API: it now correctly resolves to
+`https://career-compass-ai-9cd6f40c.vercel.app/dashboard` instead of localhost.
+Auth logs also confirm the email rate limit increased from 2/hour to 30/hour after
+enabling custom SMTP. Real signups are now fully unblocked — this had been broken
+for real users (confirmed via live auth logs) since before this session started.
+
+Provided full email template copy (Confirm sign up, Reset password, Magic link,
+Invite user, Change email, Reauthentication) — all app-branded ("CareerPilot"),
+never mentioning Supabase, ready to paste into Auth → Email Templates now that
+custom SMTP unlocked template editing.
