@@ -14,23 +14,24 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getMyRoles } from "@/lib/jobs.functions";
 import { RegionLanguageSwitcher } from "@/components/region-language-switcher";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const baseNav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/employability", label: "Employability", icon: Target },
-  { to: "/skill-gap", label: "Skill Gap", icon: Brain },
-  { to: "/resume", label: "Resume / ATS", icon: FileCheck2 },
-  { to: "/recommendations", label: "Recommendations", icon: Sparkles },
-  { to: "/jobs", label: "Jobs", icon: Briefcase },
-  { to: "/applications", label: "My Applications", icon: ClipboardList },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, hint: "Your at-a-glance overview — employability score, active applications, and today's free AI runs remaining." },
+  { to: "/employability", label: "Employability", icon: Target, hint: "A computed, evidence-based score of how ready you are for your target role, with an AI-written explanation." },
+  { to: "/skill-gap", label: "Skill Gap", icon: Brain, hint: "Browse real certifications, or run a personalized analysis of exactly which skills you're missing for your target role." },
+  { to: "/resume", label: "Resume / ATS", icon: FileCheck2, hint: "Upload your resume — get an ATS score, rewritten bullets, and a history of every past analysis." },
+  { to: "/recommendations", label: "Recommendations", icon: Sparkles, hint: "Explore real career paths, or generate personalized paths, a cover letter, and interview prep from your profile." },
+  { to: "/jobs", label: "Jobs", icon: Briefcase, hint: "Browse live-scraped roles, refreshed every 12 hours, and apply directly." },
+  { to: "/applications", label: "My Applications", icon: ClipboardList, hint: "Track every application's status, see response-rate analytics, and message recruiters." },
 ] as const;
 
 const recruiterNav = [
-  { to: "/recruiter", label: "Recruiter", icon: Building2 },
+  { to: "/recruiter", label: "Recruiter", icon: Building2, hint: "Post jobs, review applicants, and manage your hiring pipeline." },
 ] as const;
 
 const adminNav = [
-  { to: "/admin", label: "Admin console", icon: Shield },
+  { to: "/admin", label: "Admin console", icon: Shield, hint: "Manage users, jobs, job sources, blog content, subscriptions, and AI provider keys." },
 ] as const;
 
 export function AppShell({ children }: { children?: ReactNode }) {
@@ -86,22 +87,31 @@ export function AppShell({ children }: { children?: ReactNode }) {
           </Button>
         </div>
         <nav className="space-y-1 p-3">
-          {nav.map((item) => {
-            const active = location.pathname.startsWith(item.to);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+          <TooltipProvider delayDuration={300}>
+            {nav.map((item) => {
+              const active = location.pathname.startsWith(item.to);
+              return (
+                <Tooltip key={item.to}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to={item.to}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                        active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-56">
+                    <p className="font-semibold">{item.label}</p>
+                    <p className="mt-0.5 text-primary-foreground/75">{item.hint}</p>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </TooltipProvider>
         </nav>
         <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border p-3">
           <Link to="/profile" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-accent">
