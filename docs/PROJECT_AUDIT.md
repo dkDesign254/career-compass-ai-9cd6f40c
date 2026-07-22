@@ -367,8 +367,12 @@ alongside a dozen other things in the same pass.
 - G20: **Done.** Full ISO country list (195 countries) with search filtering, expanded
   to 35 languages. Not yet done: tying the selected country to auto-suggesting that
   country's own language(s) — currently the two selectors are independent.
-- G21: Help section redesign — contextual hover help per sidebar icon instead of a
-  static popup, plus a Scribe-style guided step-by-step walkthrough of the dashboard.
+- G21: **Done.** Every sidebar icon now shows a hover tooltip with an at-a-glance
+  description. The Help dialog is rebuilt from a static list into a real
+  step-by-step guided tour (Next/Back, progress dots, per-step description + usage
+  tip + "Go there now" link). Not full Scribe-style live UI element highlighting
+  (that's a much larger interactive overlay system) — a genuine step-through, not a
+  wall of text, but short of literally spotlighting DOM elements as you click.
 - G22: **Done, verified end to end.** The 12-hour scraper now generates real
   notifications after each run — matches genuinely new jobs (distinguished from
   re-scraped existing rows via `created_at`) against each user's `target_role`,

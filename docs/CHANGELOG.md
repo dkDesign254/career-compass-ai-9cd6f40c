@@ -518,3 +518,14 @@ Provided full email template copy (Confirm sign up, Reset password, Magic link,
 Invite user, Change email, Reauthentication) — all app-branded ("CareerPilot"),
 never mentioning Supabase, ready to paste into Auth → Email Templates now that
 custom SMTP unlocked template editing.
+
+## 2026-07-22 — G21 shipped: hover help + real guided walkthrough
+
+Every sidebar icon now shows a hover tooltip with a one-line at-a-glance description.
+Help dialog rebuilt from a static numbered list into a real step-by-step tour —
+Next/Back navigation, progress dots, one feature per step with description + concrete
+tip + a "Go there now" link. Fixed stale copy along the way ("2 free AI runs per
+month" — wrong on both count and period since the quota system moved to 7/day
+earlier this session). Not full Scribe-style live element highlighting — flagged
+honestly as a real step-through, not a wall of text, but short of spotlighting
+actual DOM elements.
